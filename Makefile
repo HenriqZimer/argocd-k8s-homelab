@@ -25,7 +25,7 @@ seed-vault-secrets:
 bootstrap-argocd:
 	@$(call with_env, \
 	  kubectl create namespace development --dry-run=client -o yaml | kubectl apply -f -; \
-	  helm upgrade --install argocd-bootstrap argo/argo-cd \
+	  helm upgrade --install argocd-bootstrap argo-cd \
 	    --repo https://argoproj.github.io/argo-helm \
 	    --version 9.5.14 \
 	    --namespace development \

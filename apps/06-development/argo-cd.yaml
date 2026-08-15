@@ -12,6 +12,13 @@ spec:
       chart: argo-cd
       targetRevision: "9.5.14"
       helm:
+        # Sem isso, o Argo CD usa o nome da propria Application ("argo-cd")
+        # como prefixo dos recursos renderizados - diferente do release
+        # "argocd-bootstrap" criado manualmente no primeiro bootstrap (ver
+        # Makefile bootstrap-argocd) - resultando numa SEGUNDA instalacao
+        # completa do Argo CD rodando em paralelo, em vez desta Application
+        # assumir o gerenciamento dos recursos que ja existem.
+        releaseName: argocd-bootstrap
         valueFiles:
           - $values/values/development/argo-cd.yaml
     - repoURL: https://github.com/henriqzimer/argocd-k8s-homelab.git
