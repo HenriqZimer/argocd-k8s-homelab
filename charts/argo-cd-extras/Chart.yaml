@@ -1,0 +1,4 @@
+apiVersion: v2
+name: argo-cd-extras
+description: Admin password e server secretkey do proprio Argo CD (via Vault)
+version: 1.0.0

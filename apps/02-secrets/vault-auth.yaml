@@ -1,0 +1,22 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: vault-auth
+  namespace: development
+  annotations:
+    argocd.argoproj.io/sync-wave: "4"
+spec:
+  project: homelab
+  source:
+    repoURL: https://github.com/henriqzimer/argocd-k8s-homelab.git
+    targetRevision: main
+    path: charts/vault-auth
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: secrets
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

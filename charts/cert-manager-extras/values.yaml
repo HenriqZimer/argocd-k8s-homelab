@@ -1,0 +1,5 @@
+namespace: networking
+clusterDomain: henriqzimer.com.br
+acmeEmail: henrique.zimermann@outlook.com.br
+cloudflareEmail: henrique.zimermann@outlook.com.br
+certificateNamespace: networking

@@ -1,0 +1,5 @@
+namespaces:
+  - name: networking
+    podSecurityPrivileged: true
+  - name: monitoring
+    podSecurityPrivileged: true

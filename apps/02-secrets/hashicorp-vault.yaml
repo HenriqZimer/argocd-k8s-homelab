@@ -1,0 +1,28 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: hashicorp-vault
+  namespace: development
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+spec:
+  project: homelab
+  sources:
+    - repoURL: https://helm.releases.hashicorp.com
+      chart: vault
+      targetRevision: "0.32.0"
+      helm:
+        valueFiles:
+          - $values/values/secrets/hashicorp-vault.yaml
+    - repoURL: https://github.com/henriqzimer/argocd-k8s-homelab.git
+      targetRevision: main
+      ref: values
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: secrets
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

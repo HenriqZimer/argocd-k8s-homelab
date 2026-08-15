@@ -1,0 +1,31 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: argo-cd
+  namespace: development
+  annotations:
+    argocd.argoproj.io/sync-wave: "5"
+spec:
+  project: homelab
+  sources:
+    - repoURL: https://argoproj.github.io/argo-helm
+      chart: argo-cd
+      targetRevision: "9.5.14"
+      helm:
+        valueFiles:
+          - $values/values/development/argo-cd.yaml
+    - repoURL: https://github.com/henriqzimer/argocd-k8s-homelab.git
+      targetRevision: main
+      ref: values
+    - repoURL: https://github.com/henriqzimer/argocd-k8s-homelab.git
+      targetRevision: main
+      path: charts/argo-cd-extras
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: development
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

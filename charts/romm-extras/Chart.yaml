@@ -1,0 +1,4 @@
+apiVersion: v2
+name: romm-extras
+description: PV/PVC estaticos do NFS (TrueNAS) e credenciais do RomM (via Vault)
+version: 1.0.0

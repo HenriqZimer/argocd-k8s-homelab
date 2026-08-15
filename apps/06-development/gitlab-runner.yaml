@@ -1,0 +1,31 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: gitlab-runner
+  namespace: development
+  annotations:
+    argocd.argoproj.io/sync-wave: "5"
+spec:
+  project: homelab
+  sources:
+    - repoURL: https://charts.gitlab.io
+      chart: gitlab-runner
+      targetRevision: "0.88.3"
+      helm:
+        valueFiles:
+          - $values/values/development/gitlab-runner.yaml
+    - repoURL: https://github.com/henriqzimer/argocd-k8s-homelab.git
+      targetRevision: main
+      ref: values
+    - repoURL: https://github.com/henriqzimer/argocd-k8s-homelab.git
+      targetRevision: main
+      path: charts/gitlab-runner-extras
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: development
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

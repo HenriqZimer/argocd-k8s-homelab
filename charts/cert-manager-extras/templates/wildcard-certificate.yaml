@@ -1,0 +1,23 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: wildcard-{{ .Values.clusterDomain }}
+  namespace: {{ .Values.certificateNamespace }}
+  labels:
+    app.kubernetes.io/name: wildcard-certificate
+    app.kubernetes.io/component: tls
+    app.kubernetes.io/managed-by: argocd
+    environment: production
+spec:
+  secretName: wildcard-{{ .Values.clusterDomain }}
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+    group: cert-manager.io
+  dnsNames:
+    - "*.{{ .Values.clusterDomain }}"
+    - {{ .Values.clusterDomain | quote }}
+  secretTemplate:
+    labels:
+      app.kubernetes.io/name: wildcard-certificate
+      app.kubernetes.io/component: tls

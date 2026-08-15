@@ -1,0 +1,67 @@
+# PCSX2 (PS2 emulator) - web KasmVNC desktop, no secrets/database needed
+# so this app doesn't use the Vault pattern like romm.
+#
+# Config PVC ainda nao habilitada (era um deploy de teste):
+#   persistence.config: {enabled: true, type: pvc, storageClass: nfs-slowbro, size: 10Gi}
+# ATENCAO: sem persistence.config, o BIOS colocado em /config/bios nao
+# sobrevive a um restart do pod - precisa recolocar o BIOS a cada restart
+# enquanto isso nao for habilitado.
+#
+# Streaming (RomM Emulator Streaming - docs.romm.app/latest/using/emulator-streaming/):
+# roda o broker via Docker Mod (pcsx2-romm-integration) dentro do container
+# do KasmVNC. BROKER_SECRET vem do mesmo Secret "streaming-broker-secret"
+# usado pelo romm (STREAMING_BROKER_SECRET), criado manualmente com
+# `kubectl create secret` (nao sincronizado via Vault).
+#
+# Ingress: exposto via Traefik (192.168.1.150) sob henriqzimer.com.br, pega
+# o certificado wildcard automatico do Traefik (nao precisa de tls: aqui).
+# DE PROPOSITO nao entra no terraform-cloudflare/tunel (so LAN) - streaming
+# em tempo real nao deveria dar a volta pela rede da Cloudflare a cada
+# frame. Requer DNS local: aponte pcsx2-stream.henriqzimer.com.br para
+# 192.168.1.150 (via /etc/hosts no seu dispositivo ou um registro local no
+# Pi-hole - 192.168.1.106).
+
+env:
+  PUID: "1000"
+  PGID: "1000"
+  TZ: "America/Sao_Paulo"
+  TITLE: "PCSX2"
+  # -- Docker Mod que adiciona o broker de streaming do RomM.
+  DOCKER_MODS: "ghcr.io/loneangelfayt/pcsx2-romm-integration-mod:latest"
+  # -- Precisa ser o mesmo path onde o romm monta a library (romm.persistence.library -> /romm/library).
+  ROM_ROOT: "/romm/library"
+
+envFrom:
+  - secretRef:
+      name: streaming-broker-secret
+
+streaming:
+  enabled: true
+
+ingress:
+  enabled: true
+  className: "traefik"
+  hosts:
+    - host: pcsx2-stream.henriqzimer.com.br
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+
+# ROMs/BIOS compartilhados com o romm, montados no mesmo path que o romm
+# usa (/romm/library) para o broker conseguir resolver os mesmos arquivos.
+extraVolumes:
+  - name: roms
+    persistentVolumeClaim:
+      claimName: romm-library-truenas
+extraVolumeMounts:
+  - name: roms
+    mountPath: /romm/library
+
+resources:
+  requests:
+    cpu: 500m
+    memory: 1Gi
+  limits:
+    cpu: "2"
+    memory: 4Gi

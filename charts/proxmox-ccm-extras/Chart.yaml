@@ -1,0 +1,4 @@
+apiVersion: v2
+name: proxmox-ccm-extras
+description: Credenciais do Proxmox (via Vault) para o Cloud Controller Manager
+version: 1.0.0

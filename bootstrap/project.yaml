@@ -1,0 +1,36 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: homelab
+  namespace: development
+spec:
+  description: Homelab cluster - todos os apps do antigo helm-k8s-homelab (helmfile)
+  sourceRepos:
+    - https://github.com/henriqzimer/argocd-k8s-homelab.git
+    - https://kubernetes-sigs.github.io/nfs-subdir-external-provisioner
+    - https://metallb.github.io/metallb
+    - https://charts.jetstack.io
+    - https://traefik.github.io/charts
+    - https://helm.releases.hashicorp.com
+    - https://kubernetes-sigs.github.io/metrics-server/
+    - https://prometheus-community.github.io/helm-charts
+    - https://kedacore.github.io/charts
+    - https://argoproj.github.io/argo-helm
+    - https://charts.gitlab.io
+    - https://henriqzimer.github.io/romm-helm-chart
+    - https://henriqzimer.github.io/pcsx2-helm-chart
+    - https://henriqzimer.github.io/dolphin-helm-chart
+    - https://henriqzimer.github.io/xemu-helm-chart
+    - https://henriqzimer.github.io/eden-helm-chart
+    - https://guerzon.github.io/vaultwarden
+    - ghcr.io/sergelogvinov/charts
+    - 8gears.container-registry.com/library
+  destinations:
+    - namespace: "*"
+      server: https://kubernetes.default.svc
+  clusterResourceWhitelist:
+    - group: "*"
+      kind: "*"
+  namespaceResourceWhitelist:
+    - group: "*"
+      kind: "*"

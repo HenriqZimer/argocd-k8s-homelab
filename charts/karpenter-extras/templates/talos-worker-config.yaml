@@ -1,0 +1,26 @@
+apiVersion: secrets.hashicorp.com/v1beta1
+kind: VaultStaticSecret
+metadata:
+  name: talos-worker-config-sync
+  namespace: {{ .Values.namespace }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1"
+spec:
+  vaultAuthRef: default
+  type: kv-v2
+  mount: k8s-homelab
+  path: talos-worker-config
+  refreshAfter: 1m
+  destination:
+    name: talos-worker-config
+    create: true
+    overwrite: true
+    type: Opaque
+    transformation:
+      templates:
+        meta-data:
+          text: '{{ "{{" }} get .Secrets "meta-data" {{ "}}" }}'
+        network-config:
+          text: '{{ "{{" }} get .Secrets "network-config" {{ "}}" }}'
+        user-data:
+          text: '{{ "{{" }} get .Secrets "user-data" {{ "}}" }}'

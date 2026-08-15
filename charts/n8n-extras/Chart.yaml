@@ -1,0 +1,4 @@
+apiVersion: v2
+name: n8n-extras
+description: Credenciais do Postgres para o n8n (via Vault)
+version: 1.0.0

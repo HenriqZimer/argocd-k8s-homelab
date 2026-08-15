@@ -1,0 +1,224 @@
+# RomM - configurado para usar o Vault (secrets.enabled: false) em vez dos
+# secrets internos do chart. Os valores sensiveis (senhas, API keys) vem do
+# Secret "romm-credentials" (sincronizado do Vault via gaming/romm/manifests/
+# vault-secret.yaml); os nao-sensiveis (nomes de usuario/banco, porta) ficam
+# direto aqui, mesmo padrao usado nos outros apps deste repo.
+
+# -- Number of RomM replicas to start. Should be left at 1.
+replicaCount: 1
+
+# -- Number of old ReplicaSets to retain for rollback history.
+revisionHistoryLimit: 3
+
+# -- Image pull secrets to authenticate with private repositories.
+imagePullSecrets: []
+
+# -- Override the default name of the chart.
+nameOverride: ""
+# -- Override the default full name of the chart.
+fullnameOverride: ""
+
+# -- Annotations to add to the pod.
+podAnnotations: {}
+# -- Additional labels to add to the pod.
+podLabels: {}
+
+# -- Security context for the pod.
+podSecurityContext: {}
+
+# -- Security context for the container. O chart tem "drop: [ALL]" como
+# default e um override vazio ({}) nao limpa isso (merge de mapa do Helm nao
+# apaga chaves existentes) - por isso precisamos re-adicionar explicitamente
+# as capabilities que o entrypoint da imagem realmente usa, todas para o
+# processo master rodando como root (uid 0) dentro do container:
+#   - CHOWN: nginx ajusta dono do /tmp/client_body pro uid do worker (romm/1000)
+#   - SETUID/SETGID: nginx e o supervisor derrubam privilegio pros workers
+#   - DAC_OVERRIDE: o valkey interno roda como root mas /redis-data pertence
+#     ao uid 1000 (modo 755, sem write pra outros) - sem essa capability o
+#     bgsave falha com "MISCONF ... unable to persist to disk" e o Redis passa
+#     a recusar escritas, quebrando sessao/heartbeat (erros 500 na API)
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
+    add:
+      - CHOWN
+      - SETUID
+      - SETGID
+      - DAC_OVERRIDE
+
+# -- Node selector for pod scheduling.
+nodeSelector: {}
+
+# -- Tolerations for pod scheduling.
+tolerations: []
+
+# -- Affinity rules for pod scheduling.
+affinity: {}
+
+# -- Secrets em modo externo: os valores sensiveis vem do Secret
+# "romm-credentials" (sincronizado do Vault) via romm.envFrom/mariadb.envFrom
+# abaixo, nao dos secrets internos do chart.
+secrets:
+  enabled: false
+
+# -- RomM application configuration
+romm:
+  # -- Container image configuration
+  image:
+    # -- Container image repository for RomM.
+    repository: docker.io/rommapp/romm
+    # -- RomM container image tag. O banco externo ja tem migrations ate
+    # 0069_sibling_roms_fs_name (de uma instalacao anterior), que so existe a
+    # partir da 4.9.2 - versoes mais antigas (ex: 4.5.0) nao reconhecem essa
+    # revisao e falham ao migrar. Fixado na ultima estavel (nao alpha/beta).
+    # Atualizado para 5.1.0 em 2026-08-12 para casar com a imagem que ja
+    # estava rodando em producao (alterada manualmente via kubenav em
+    # 2026-08-11), evitando downgrade e possivel quebra de migration.
+    tag: "5.1.0"
+    # -- Image pull policy (Always, IfNotPresent, or Never).
+    pullPolicy: IfNotPresent
+
+  # -- Resources requests and limits for RomM container.
+  resources:
+    requests:
+      cpu: 500m
+      memory: 1Gi
+    limits:
+      cpu: 1000m
+      memory: 2Gi
+
+  # -- Service configuration
+  service:
+    # -- Service type (ClusterIP, NodePort, or LoadBalancer).
+    type: ClusterIP
+    # -- Port for the RomM service.
+    port: 8080
+    # -- Name of the port in the service.
+    portName: http
+    # -- Annotations for the service.
+    annotations: {}
+    # -- Labels for the service.
+    labels: {}
+
+  # -- Ingress configuration.
+  ingress:
+    enabled: true
+    className: "traefik"
+    annotations: {}
+    hosts:
+      - host: romm.henriqzimer.com.br
+        paths:
+          - path: /
+            pathType: Prefix
+    tls: []
+
+  # -- Persistence configuration for RomM data
+  persistence:
+    # -- Configuration data (database connection, API keys, etc)
+    config:
+      enabled: true
+      type: pvc
+      hostPath: ""
+      accessMode: ReadWriteOnce
+      size: 1Gi
+      annotations: {}
+      storageClass: "nfs-slowbro"
+      existingClaim: ""
+
+    library:
+      enabled: true
+      type: pvc
+      hostPath: ""
+      accessMode: ReadWriteMany
+      size: 100Gi
+      annotations: {}
+      storageClass: "nfs-slowbro"
+      existingClaim: "romm-library-truenas"
+
+    # -- Resources (cover images, screenshots, etc)
+    resources:
+      enabled: true
+      type: pvc
+      hostPath: ""
+      accessMode: ReadWriteOnce
+      size: 10Gi
+      annotations: {}
+      storageClass: "nfs-slowbro"
+      existingClaim: ""
+
+    # -- Assets (EmulatorJS files, etc)
+    assets:
+      enabled: true
+      type: pvc
+      hostPath: ""
+      accessMode: ReadWriteOnce
+      size: 5Gi
+      annotations: {}
+      storageClass: "nfs-slowbro"
+      existingClaim: ""
+
+  # -- Valores nao-sensiveis (senhas/keys ficam no Secret romm-credentials via envFrom)
+  env:
+    - name: DB_PORT
+      value: "3306"
+    - name: DB_USER
+      value: "romm"
+    - name: DB_NAME
+      value: "romm"
+
+  # -- Carrega DB_PASSWD, ROMM_AUTH_SECRET_KEY e as API keys de metadata do
+  # Secret sincronizado do Vault, e STREAMING_BROKER_SECRET do Secret manual
+  # compartilhado com pcsx2/dolphin (kubectl create secret, nao Vault).
+  envFrom:
+    - secretRef:
+        name: romm-credentials
+    - secretRef:
+        name: streaming-broker-secret
+
+  # -- RomM Configuration File (config.yml). `host` precisa ser alcancavel
+  # pelo NAVEGADOR do usuario - usa os hostnames Ingress via Traefik
+  # (certificado wildcard real *.henriqzimer.com.br, LAN-only, fora do
+  # tunel Cloudflare para nao adicionar latencia ao stream). Requer DNS
+  # local (client /etc/hosts ou Pi-hole) apontando esses hosts para
+  # 192.168.1.150. `broker_host` e chamado pelo backend do romm
+  # (server-to-server), autenticado com o mesmo STREAMING_BROKER_SECRET do
+  # Secret streaming-broker-secret.
+  #
+  # TESTE 2026-08-13: apontando temporariamente para os 4 emuladores rodando
+  # via docker compose na altaria (192.168.1.100, RTX 3050 - GPU real pros
+  # emuladores), em vez dos charts pcsx2/dolphin/xemu/eden no k8s (bloqueados
+  # pelo bug do chart-releaser / gh-pages nos repos publicados). Reverter
+  # para os hosts *.henriqzimer.com.br / *.gaming.svc.cluster.local assim que
+  # os charts publicarem certo e os deployments no cluster voltarem a ser a
+  # fonte de verdade.
+  config:
+    enabled: true
+    name: romm-config-file
+    data: |
+      streaming:
+        enabled: true
+        containers:
+          - platform: ps2
+            host: https://192.168.1.100:3001       # altaria - pcsx2 (docker compose, teste)
+            broker_host: http://192.168.1.100:8000
+            label: PCSX2
+          - platform: ngc
+            host: https://192.168.1.100:3003       # altaria - dolphin (docker compose, teste)
+            broker_host: http://192.168.1.100:8001
+            label: Dolphin
+          - platform: xbox
+            host: https://192.168.1.100:3005       # altaria - xemu (docker compose, teste)
+            broker_host: http://192.168.1.100:8002
+            label: xemu
+          - platform: switch
+            host: https://192.168.1.100:3007       # altaria - eden (docker compose, teste)
+            broker_host: http://192.168.1.100:8003
+            label: Eden
+
+mariadb:
+  enabled: false
+
+  externalDatabase:
+    host: "192.168.1.105"

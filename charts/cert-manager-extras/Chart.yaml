@@ -1,0 +1,4 @@
+apiVersion: v2
+name: cert-manager-extras
+description: ClusterIssuers Let's Encrypt (Cloudflare DNS-01), Certificate wildcard e sync do token via Vault
+version: 1.0.0

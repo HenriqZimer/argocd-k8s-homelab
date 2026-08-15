@@ -1,0 +1,4 @@
+apiVersion: v2
+name: kube-prometheus-stack-extras
+description: Credenciais do Grafana (via Vault)
+version: 1.0.0

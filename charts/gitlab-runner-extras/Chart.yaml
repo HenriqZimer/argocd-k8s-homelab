@@ -1,0 +1,4 @@
+apiVersion: v2
+name: gitlab-runner-extras
+description: Runner token do GitLab Runner (via Vault)
+version: 1.0.0

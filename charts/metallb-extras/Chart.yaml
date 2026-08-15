@@ -1,0 +1,4 @@
+apiVersion: v2
+name: metallb-extras
+description: IPAddressPool e L2Advertisement do MetalLB
+version: 1.0.0

@@ -1,0 +1,4 @@
+apiVersion: v2
+name: vault-auth
+description: VaultAuth (kubernetes auth) por namespace, um por app consumidor do Vault
+version: 1.0.0

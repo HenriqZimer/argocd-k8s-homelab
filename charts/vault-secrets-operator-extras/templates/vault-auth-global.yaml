@@ -1,0 +1,10 @@
+apiVersion: secrets.hashicorp.com/v1beta1
+kind: VaultAuthGlobal
+metadata:
+  name: vault-auth-global
+  namespace: {{ .Values.namespace }}
+spec:
+  defaultAuthMethod: kubernetes
+  defaultMount: kubernetes
+  allowedNamespaces:
+    {{- toYaml .Values.allowedNamespaces | nindent 4 }}

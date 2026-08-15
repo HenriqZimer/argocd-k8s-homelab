@@ -1,0 +1,4 @@
+apiVersion: v2
+name: cluster-bootstrap
+description: Namespaces com labels de Pod Security Admission que os apps do homelab precisam antes de qualquer release
+version: 1.0.0

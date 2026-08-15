@@ -1,0 +1,4 @@
+apiVersion: v2
+name: portainer-extras
+description: Senha inicial do Portainer (via Vault)
+version: 1.0.0

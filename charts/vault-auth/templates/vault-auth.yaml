@@ -1,0 +1,14 @@
+{{- range .Values.namespaces }}
+apiVersion: secrets.hashicorp.com/v1beta1
+kind: VaultAuth
+metadata:
+  name: default
+  namespace: {{ . }}
+spec:
+  method: kubernetes
+  mount: {{ $.Values.mount }}
+  kubernetes:
+    role: {{ $.Values.role }}
+    serviceAccount: {{ $.Values.serviceAccount }}
+---
+{{- end }}

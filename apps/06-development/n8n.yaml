@@ -1,0 +1,31 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: n8n
+  namespace: development
+  annotations:
+    argocd.argoproj.io/sync-wave: "5"
+spec:
+  project: homelab
+  sources:
+    - repoURL: 8gears.container-registry.com/library
+      chart: n8n
+      targetRevision: "2.0.1"
+      helm:
+        valueFiles:
+          - $values/values/development/n8n.yaml
+    - repoURL: https://github.com/henriqzimer/argocd-k8s-homelab.git
+      targetRevision: main
+      ref: values
+    - repoURL: https://github.com/henriqzimer/argocd-k8s-homelab.git
+      targetRevision: main
+      path: charts/n8n-extras
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: development
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

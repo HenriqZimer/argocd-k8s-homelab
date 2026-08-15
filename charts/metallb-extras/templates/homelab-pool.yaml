@@ -1,0 +1,19 @@
+apiVersion: metallb.io/v1beta1
+kind: IPAddressPool
+metadata:
+  name: homelab-pool
+  namespace: {{ .Values.namespace }}
+spec:
+  addresses:
+    - {{ .Values.addressRange }}
+---
+apiVersion: metallb.io/v1beta1
+kind: L2Advertisement
+metadata:
+  name: homelab-advertisement
+  namespace: {{ .Values.namespace }}
+spec:
+  ipAddressPools:
+    - homelab-pool
+  interfaces:
+    - {{ .Values.interface }}

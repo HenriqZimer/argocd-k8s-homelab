@@ -1,0 +1,38 @@
+# PV/PVC estaticos apontando direto pro export NFS existente no TrueNAS,
+# em vez do provisionamento dinamico padrao do chart.
+# reclaimPolicy: Retain e essencial aqui - nunca deixar o Kubernetes apagar
+# a pasta real de ROMs no TrueNAS ao remover a PVC/release.
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: romm-library-truenas
+  labels:
+    app.kubernetes.io/name: romm
+    app.kubernetes.io/component: romm
+spec:
+  capacity:
+    storage: {{ .Values.storage }}
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: ""
+  nfs:
+    server: {{ .Values.nfsServer }}
+    path: {{ .Values.nfsPath }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: romm-library-truenas
+  namespace: {{ .Values.namespace }}
+  labels:
+    app.kubernetes.io/name: romm
+    app.kubernetes.io/component: romm
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: {{ .Values.storage }}
+  storageClassName: ""
+  volumeName: romm-library-truenas

@@ -1,0 +1,4 @@
+apiVersion: v2
+name: karpenter-extras
+description: Credenciais do Proxmox e user-data Talos (via Vault) para o Karpenter
+version: 1.0.0

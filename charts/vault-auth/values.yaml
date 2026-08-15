@@ -1,0 +1,10 @@
+role: role-k8s-homelab
+mount: kubernetes
+serviceAccount: default
+namespaces:
+  - secrets
+  - networking
+  - kube-system
+  - monitoring
+  - development
+  - gaming

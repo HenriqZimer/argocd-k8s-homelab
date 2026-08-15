@@ -1,0 +1,28 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: pcsx2
+  namespace: development
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  project: homelab
+  sources:
+    - repoURL: https://henriqzimer.github.io/pcsx2-helm-chart
+      chart: pcsx2
+      targetRevision: "1.1.1"
+      helm:
+        valueFiles:
+          - $values/values/gaming/pcsx2.yaml
+    - repoURL: https://github.com/henriqzimer/argocd-k8s-homelab.git
+      targetRevision: main
+      ref: values
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: gaming
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
