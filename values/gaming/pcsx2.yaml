@@ -72,6 +72,13 @@ extraVolumeMounts:
   - name: roms
     mountPath: /config/bios
     subPath: bios/ps2
+  # -- Path nativo que o proprio PCSX2 escaneia como biblioteca de jogos
+  # (ver exemplo comentado no values.yaml default do chart). subPath so
+  # da pasta ps2 pra aparecer como lista plana de jogos, sem misturar com
+  # os outros sistemas que ficam em /romm/library/roms/<outra-plataforma>.
+  - name: roms
+    mountPath: /roms
+    subPath: roms/ps2
 
 persistence:
   config:
