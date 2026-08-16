@@ -1,10 +1,8 @@
 # Eden (Nintendo Switch emulator) - web KasmVNC desktop, no secrets/database
 # needed so this app doesn't use the Vault pattern like romm.
 #
-# Config PVC ainda nao habilitada (era um deploy de teste):
-#   persistence.config: {enabled: true, type: pvc, storageClass: nfs-slowbro, size: 10Gi}
-# ATENCAO: sem persistence.config, config/saves nao sobrevivem a um
-# restart do pod enquanto isso nao for habilitado.
+# persistence.config habilitada (PVC via nfs-slowbro) - sem isso,
+# config/saves nao sobreviveriam a um restart do pod.
 #
 # Streaming (RomM Emulator Streaming - docs.romm.app/latest/using/emulator-streaming/):
 # roda o broker via Docker Mod (eden-romm-integration) dentro do container
@@ -68,6 +66,13 @@ extraVolumes:
 extraVolumeMounts:
   - name: roms
     mountPath: /romm/library
+
+persistence:
+  config:
+    enabled: true
+    type: pvc
+    storageClass: nfs-slowbro
+    size: 10Gi
 
 resources:
   requests:
