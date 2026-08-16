@@ -66,6 +66,12 @@ extraVolumes:
 extraVolumeMounts:
   - name: roms
     mountPath: /romm/library
+  # -- BIOS do PS2 ja vive em /romm/library/bios/ps2 (mesma PVC, subPath
+  # so daquela pasta) - monta por cima do /config/bios local pra nao
+  # precisar duplicar o BIOS numa segunda PVC.
+  - name: roms
+    mountPath: /config/bios
+    subPath: bios/ps2
 
 persistence:
   config:
