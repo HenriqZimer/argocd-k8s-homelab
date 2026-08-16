@@ -22,6 +22,11 @@ spec:
     - https://henriqzimer.github.io/dolphin-helm-chart
     - https://henriqzimer.github.io/xemu-helm-chart
     - https://henriqzimer.github.io/eden-helm-chart
+    - https://henriqzimer.github.io/flycast-helm-chart
+    - https://henriqzimer.github.io/azahar-helm-chart
+    - https://henriqzimer.github.io/shadps4-helm-chart
+    - https://henriqzimer.github.io/rpcs3-helm-chart
+    - https://henriqzimer.github.io/ppsspp-helm-chart
     - https://guerzon.github.io/vaultwarden
     - ghcr.io/sergelogvinov/charts
     - 8gears.container-registry.com/library

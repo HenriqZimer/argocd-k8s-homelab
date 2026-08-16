@@ -1,0 +1,28 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: ppsspp
+  namespace: development
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  project: homelab
+  sources:
+    - repoURL: https://henriqzimer.github.io/ppsspp-helm-chart
+      chart: ppsspp
+      targetRevision: "1.0.0"
+      helm:
+        valueFiles:
+          - $values/values/gaming/ppsspp.yaml
+    - repoURL: https://github.com/henriqzimer/argocd-k8s-homelab.git
+      targetRevision: main
+      ref: values
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: gaming
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

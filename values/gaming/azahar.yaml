@@ -1,0 +1,71 @@
+# Azahar (3DS) emulator - web KasmVNC desktop, no secrets/database needed
+# so this app doesn't use the Vault pattern like romm.
+#
+# Sem streaming: nao existe Docker Mod de integracao com o RomM publicado
+# pra esse chart ainda (ver comentario do values.yaml default do chart) -
+# streaming.enabled fica false, sem STREAMING_BROKER_SECRET/DOCKER_MODS.
+#
+# persistence.config habilitada (PVC via nfs-slowbro) pra saves/config
+# sobreviverem a um restart do pod.
+#
+# Ingress: exposto via Traefik sob henriqzimer.com.br, so LAN (requer DNS
+# local - Pi-hole em 192.168.1.106 - apontando azahar-stream para
+# 192.168.1.160, o LoadBalancer do Traefik nesse cluster).
+
+env:
+  PUID: "1000"
+  PGID: "1000"
+  TZ: "America/Sao_Paulo"
+  TITLE: "Azahar"
+  # -- Expoe a GPU NVIDIA do node pro container. O runtime "nvidia" ja e o
+  # default do containerd em talos-worker-3 (ver locals.tf do
+  # terraform-homelab), entao nao precisa de RuntimeClass nem do resource
+  # extendido nvidia.com/gpu (que exigiria 1 GPU inteira por pod - com
+  # varios emuladores + romm no mesmo node, so um deles conseguiria agendar).
+  NVIDIA_VISIBLE_DEVICES: "all"
+  NVIDIA_DRIVER_CAPABILITIES: "all"
+
+# -- Fixa no worker com a RTX 3050 (unico node com GPU no cluster).
+nodeSelector:
+  nvidia.com/gpu.present: "true"
+
+ingress:
+  enabled: true
+  className: "traefik"
+  hosts:
+    - host: azahar-stream.henriqzimer.com.br
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+
+# ROMs compartilhados com o romm, mesma PVC usada pelos outros emuladores.
+extraVolumes:
+  - name: roms
+    persistentVolumeClaim:
+      claimName: romm-library-truenas
+extraVolumeMounts:
+  - name: roms
+    mountPath: /romm/library
+  # -- Path nativo que o proprio emulador escaneia como biblioteca de
+  # jogos (ver exemplo comentado no values.yaml default do chart). subPath
+  # so da pasta "3ds" (slug da plataforma no romm) pra aparecer
+  # como lista plana.
+  - name: roms
+    mountPath: /roms
+    subPath: roms/3ds
+
+persistence:
+  config:
+    enabled: true
+    type: pvc
+    storageClass: nfs-slowbro
+    size: 10Gi
+
+resources:
+  requests:
+    cpu: 500m
+    memory: 1Gi
+  limits:
+    cpu: "2"
+    memory: 4Gi
