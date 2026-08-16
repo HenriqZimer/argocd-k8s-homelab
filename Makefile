@@ -21,11 +21,13 @@ seed-vault-secrets:
 
 # Passo 0 do proprio Argo CD: precisa existir ANTES do GitOps poder se autogerenciar.
 # So roda uma vez por cluster novo - depois disso o app "argo-cd" (apps/06-development)
-# assume o gerenciamento de si mesmo.
+# assume o gerenciamento de si mesmo. O release name aqui ("argo-cd") tem que
+# bater com helm.releaseName em apps/06-development/argo-cd.yaml, senao essa
+# Application cria um SEGUNDO Argo CD em vez de assumir este.
 bootstrap-argocd:
 	@$(call with_env, \
 	  kubectl create namespace development --dry-run=client -o yaml | kubectl apply -f -; \
-	  helm upgrade --install argocd-bootstrap argo-cd \
+	  helm upgrade --install argo-cd argo-cd \
 	    --repo https://argoproj.github.io/argo-helm \
 	    --version 9.5.14 \
 	    --namespace development \
