@@ -30,10 +30,21 @@ env:
   DOCKER_MODS: "ghcr.io/loneangelfayt/xemu-romm-integration-mod:latest"
   # -- Precisa ser o mesmo path onde o romm monta a library (romm.persistence.library -> /romm/library).
   ROM_ROOT: "/romm/library"
+  # -- Expoe a GPU NVIDIA do node pro container. O runtime "nvidia" ja e o
+  # default do containerd em talos-worker-3 (ver locals.tf do
+  # terraform-homelab), entao nao precisa de RuntimeClass nem do resource
+  # extendido nvidia.com/gpu (que exigiria 1 GPU inteira por pod - com 4
+  # emuladores + romm no mesmo node, so um deles conseguiria agendar).
+  NVIDIA_VISIBLE_DEVICES: "all"
+  NVIDIA_DRIVER_CAPABILITIES: "all"
 
 envFrom:
   - secretRef:
       name: streaming-broker-secret
+
+# -- Fixa no worker com a RTX 3050 (unico node com GPU no cluster).
+nodeSelector:
+  nvidia.com/gpu.present: "true"
 
 streaming:
   enabled: true
