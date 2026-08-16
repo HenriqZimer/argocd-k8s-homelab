@@ -186,13 +186,15 @@ romm:
   # (server-to-server), autenticado com o mesmo STREAMING_BROKER_SECRET do
   # Secret streaming-broker-secret.
   #
-  # TESTE 2026-08-13: apontando temporariamente para os 4 emuladores rodando
-  # via docker compose na altaria (192.168.1.100, RTX 3050 - GPU real pros
-  # emuladores), em vez dos charts pcsx2/dolphin/xemu/eden no k8s (bloqueados
-  # pelo bug do chart-releaser / gh-pages nos repos publicados). Reverter
-  # para os hosts *.henriqzimer.com.br / *.gaming.svc.cluster.local assim que
-  # os charts publicarem certo e os deployments no cluster voltarem a ser a
-  # fonte de verdade.
+  # Revertido de volta pros deployments do cluster (dolphin/pcsx2 ja
+  # rodando no namespace gaming; xemu/eden ainda nao subiram - os charts
+  # publicados em henriqzimer.github.io/{xemu,eden}-helm-chart ainda nao
+  # resolvem, ver Application "xemu"/"eden" com sync status Unknown).
+  # `host` e o hostname do Ingress (Traefik, *.henriqzimer.com.br) porque
+  # precisa ser alcancavel pelo NAVEGADOR do usuario, nao pela rede interna
+  # do cluster. `broker_host` e chamado direto pelo backend do romm
+  # (server-to-server), por isso usa o Service DNS interno
+  # (<app>.gaming.svc.cluster.local:8000, porta "broker" do Service).
   config:
     enabled: true
     name: romm-config-file
@@ -201,20 +203,20 @@ romm:
         enabled: true
         containers:
           - platform: ps2
-            host: https://192.168.1.100:3001       # altaria - pcsx2 (docker compose, teste)
-            broker_host: http://192.168.1.100:8000
+            host: https://pcsx2-stream.henriqzimer.com.br
+            broker_host: http://pcsx2.gaming.svc.cluster.local:8000
             label: PCSX2
           - platform: ngc
-            host: https://192.168.1.100:3003       # altaria - dolphin (docker compose, teste)
-            broker_host: http://192.168.1.100:8001
+            host: https://dolphin-stream.henriqzimer.com.br
+            broker_host: http://dolphin.gaming.svc.cluster.local:8000
             label: Dolphin
           - platform: xbox
-            host: https://192.168.1.100:3005       # altaria - xemu (docker compose, teste)
-            broker_host: http://192.168.1.100:8002
+            host: https://xemu-stream.henriqzimer.com.br
+            broker_host: http://xemu.gaming.svc.cluster.local:8000
             label: xemu
           - platform: switch
-            host: https://192.168.1.100:3007       # altaria - eden (docker compose, teste)
-            broker_host: http://192.168.1.100:8003
+            host: https://eden-stream.henriqzimer.com.br
+            broker_host: http://eden.gaming.svc.cluster.local:8000
             label: Eden
 
 mariadb:
