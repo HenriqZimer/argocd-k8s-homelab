@@ -66,6 +66,13 @@ extraVolumes:
 extraVolumeMounts:
   - name: roms
     mountPath: /romm/library
+  # -- Path nativo que o proprio Eden escaneia como biblioteca de jogos
+  # (ver exemplo comentado no values.yaml default do chart). subPath so
+  # da pasta "switch" (slug da plataforma no romm) pra aparecer como
+  # lista plana, sem misturar com os outros sistemas.
+  - name: roms
+    mountPath: /roms
+    subPath: roms/switch
 
 persistence:
   config:
