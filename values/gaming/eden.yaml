@@ -2,7 +2,8 @@
 # proprio (nao usa um Secret "-credentials" dedicado como o romm).
 #
 # persistence.config habilitada (PVC via nfs-slowbro) - sem isso,
-# config/saves nao sobreviveriam a um restart do pod.
+# config/saves (e as keys do Switch em /config/.local/share/eden/keys,
+# ver extraVolumeMounts abaixo) nao sobreviveriam a um restart do pod.
 #
 # Streaming (RomM Emulator Streaming - docs.romm.app/latest/using/emulator-streaming/):
 # roda o broker via Docker Mod (eden-romm-integration) dentro do container
@@ -67,6 +68,19 @@ extraVolumes:
 extraVolumeMounts:
   - name: roms
     mountPath: /romm/library
+  # -- Keys/firmware do Switch (prod.keys, title.keys) ja vivem em
+  # /romm/library/bios/switch (mesma PVC, subPath so daquela pasta) -
+  # monta por cima de /config/.local/share/eden/keys, que e o path fixo
+  # (nao configuravel via ini) que o Eden usa pra achar as keys, mesmo
+  # padrao do bios/ps2 -> /config/bios do pcsx2. Confirmado via `kubectl
+  # exec` no pod rodando (find /config/.local/share/eden mostra
+  # keys/, nand/system/Contents/registered/ etc - estrutura herdada do
+  # yuzu). Firmware (NCAs) ainda precisa ser instalado pela UI do Eden
+  # (File > Install Files to NAND) - o romm so guarda os arquivos, nao
+  # ha um path fixo de firmware bruto pra montar direto.
+  - name: roms
+    mountPath: /config/.local/share/eden/keys
+    subPath: bios/switch
   # -- Path nativo que o proprio Eden escaneia como biblioteca de jogos
   # (ver exemplo comentado no values.yaml default do chart). subPath so
   # da pasta "switch" (slug da plataforma no romm) pra aparecer como
