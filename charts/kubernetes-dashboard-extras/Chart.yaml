@@ -1,0 +1,4 @@
+apiVersion: v2
+name: kubernetes-dashboard-extras
+description: ServiceAccount admin (login por token) para o Kubernetes Dashboard
+version: 1.0.0

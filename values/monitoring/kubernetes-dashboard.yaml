@@ -1,0 +1,10 @@
+app:
+  ingress:
+    enabled: true
+    hosts:
+      - dashboard.henriqzimer.com.br
+    ingressClassName: traefik
+    useDefaultIngressClass: false
+    useDefaultAnnotations: false
+    tls:
+      enabled: false

@@ -30,6 +30,7 @@ spec:
     - https://guerzon.github.io/vaultwarden
     - https://grafana.github.io/helm-charts
     - https://portainer.github.io/k8s/
+    - https://otwld.github.io/ollama-helm/
     - ghcr.io/sergelogvinov/charts
     - 8gears.container-registry.com/library
   destinations:
