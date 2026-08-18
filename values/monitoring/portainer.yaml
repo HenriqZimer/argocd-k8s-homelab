@@ -14,7 +14,7 @@ enterpriseEdition:
 
 image:
   repository: portainer/portainer-ce
-  tag: 2.39.2
+  tag: 2.44.0
   pullPolicy: Always
 
 imagePullSecrets: []
