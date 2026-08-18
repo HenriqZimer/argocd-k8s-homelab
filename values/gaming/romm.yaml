@@ -169,8 +169,9 @@ romm:
       value: "romm"
 
   # -- Carrega DB_PASSWD, ROMM_AUTH_SECRET_KEY e as API keys de metadata do
-  # Secret sincronizado do Vault, e STREAMING_BROKER_SECRET do Secret manual
-  # compartilhado com pcsx2/dolphin (kubectl create secret, nao Vault).
+  # Secret romm-credentials, e STREAMING_BROKER_SECRET do Secret
+  # streaming-broker-secret (compartilhado com pcsx2/dolphin/eden/xemu) -
+  # ambos sincronizados do Vault pelos VaultStaticSecret em charts/romm-extras.
   envFrom:
     - secretRef:
         name: romm-credentials

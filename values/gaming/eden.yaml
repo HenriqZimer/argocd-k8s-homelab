@@ -1,5 +1,5 @@
-# Eden (Nintendo Switch emulator) - web KasmVNC desktop, no secrets/database
-# needed so this app doesn't use the Vault pattern like romm.
+# Eden (Nintendo Switch emulator) - web KasmVNC desktop, sem database
+# proprio (nao usa um Secret "-credentials" dedicado como o romm).
 #
 # persistence.config habilitada (PVC via nfs-slowbro) - sem isso,
 # config/saves nao sobreviveriam a um restart do pod.
@@ -7,9 +7,10 @@
 # Streaming (RomM Emulator Streaming - docs.romm.app/latest/using/emulator-streaming/):
 # roda o broker via Docker Mod (eden-romm-integration) dentro do container
 # do KasmVNC. BROKER_SECRET vem do mesmo Secret "streaming-broker-secret"
-# usado pelo romm (STREAMING_BROKER_SECRET), criado manualmente com
-# `kubectl create secret` (nao sincronizado via Vault). Eden nao suporta
-# save states via streaming (so saves NAND normais).
+# usado pelo romm (STREAMING_BROKER_SECRET), sincronizado do Vault pelo
+# VaultStaticSecret em charts/romm-extras (compartilhado entre romm e os
+# emuladores com streaming habilitado). Eden nao suporta save states via
+# streaming (so saves NAND normais).
 #
 # Ingress: exposto via Traefik (192.168.1.150) sob henriqzimer.com.br, pega
 # o certificado wildcard automatico do Traefik (nao precisa de tls: aqui).

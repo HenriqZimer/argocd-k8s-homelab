@@ -206,6 +206,27 @@ EOF
   fi
 }
 
+seed_streaming_broker_secret() {
+  local broker_secret="${STREAMING_BROKER_SECRET:-}"
+
+  if [[ -z "${broker_secret}" ]]; then
+    broker_secret="$(secret_value gaming streaming-broker-secret STREAMING_BROKER_SECRET)"
+  fi
+
+  # Compartilhado entre romm e os emuladores com streaming habilitado
+  # (pcsx2/dolphin/eden/xemu) - gera automaticamente na primeira vez.
+  [[ -n "${broker_secret}" ]] || broker_secret="$(openssl rand -hex 32)"
+
+  vault_kv_put streaming-broker "$(
+    jq -n \
+      --arg broker_secret "${broker_secret}" \
+      '{
+        "STREAMING_BROKER_SECRET": $broker_secret,
+        "BROKER_SECRET": $broker_secret
+      }'
+  )"
+}
+
 seed_vaultwarden_credentials() {
   local username="${VAULTWARDEN_DB_USERNAME:-}"
   local password="${VAULTWARDEN_DB_PASSWORD:-}"
@@ -334,5 +355,6 @@ seed_grafana_credentials
 seed_portainer_credentials
 seed_cert_manager_token
 seed_romm_credentials
+seed_streaming_broker_secret
 seed_vaultwarden_credentials
 seed_talos_worker_config
