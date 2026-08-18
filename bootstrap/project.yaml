@@ -28,6 +28,8 @@ spec:
     - https://henriqzimer.github.io/rpcs3-helm-chart
     - https://henriqzimer.github.io/ppsspp-helm-chart
     - https://guerzon.github.io/vaultwarden
+    - https://grafana.github.io/helm-charts
+    - https://portainer.github.io/k8s/
     - ghcr.io/sergelogvinov/charts
     - 8gears.container-registry.com/library
   destinations:

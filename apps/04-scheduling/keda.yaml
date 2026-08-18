@@ -26,3 +26,9 @@ spec:
       selfHeal: true
     syncOptions:
       - CreateNamespace=true
+      # O CRD ScaledJob e grande o suficiente pra estourar o limite de
+      # 262144 bytes da annotation kubectl.kubernetes.io/last-applied-
+      # -configuration usada pelo apply client-side (erro "metadata.
+      # annotations: Too long"). Server-side apply nao depende dessa
+      # annotation, entao evita o limite.
+      - ServerSideApply=true
