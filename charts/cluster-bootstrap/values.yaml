@@ -3,3 +3,5 @@ namespaces:
     podSecurityPrivileged: true
   - name: monitoring
     podSecurityPrivileged: true
+  - name: scheduling
+    podSecurityPrivileged: true
