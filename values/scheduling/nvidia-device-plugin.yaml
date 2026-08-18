@@ -1,0 +1,10 @@
+# Sem NFD (Node Feature Discovery) no cluster, entao o affinity default do
+# chart (que depende de labels tipo feature.node.kubernetes.io/pci-10de.
+# present) nunca bate - zera ele e usa o mesmo nodeSelector que ja
+# identifica o worker com GPU (moltres) em outros apps (ver xemu, dolphin
+# etc). O driver/toolkit NVIDIA ja vem das extensions Talos
+# (nvidia-container-toolkit-production) - esse DaemonSet so registra
+# nvidia.com/gpu como resource alocavel pro scheduler.
+affinity: {}
+nodeSelector:
+  nvidia.com/gpu.present: "true"
