@@ -100,6 +100,12 @@ resources:
   requests:
     cpu: 100m
     memory: 256Mi
+  # -- Limite subido de 2 CPU/4Gi para 3 CPU/8Gi (2026-08-18): pod estava
+  # sendo OOMKilled (exit 137) ao carregar um jogo (Switch emula shader
+  # compilation + texturas em alta res, uso de RAM bem maior que os
+  # outros emuladores 2D/PS1-era deste values/gaming/). O node
+  # (talos-worker-3/moltres) tem folga de sobra pra isso - ver `kubectl
+  # top node moltres` antes de subir mais.
   limits:
-    cpu: "2"
-    memory: 4Gi
+    cpu: "3"
+    memory: 8Gi
