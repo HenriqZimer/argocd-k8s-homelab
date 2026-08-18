@@ -29,3 +29,9 @@ spec:
       selfHeal: true
     syncOptions:
       - CreateNamespace=true
+      # CRDs (Prometheus, Alertmanager, etc) estouram o limite de 262144
+      # bytes da annotation last-applied-configuration do apply client-side
+      # (mesmo motivo do fix em keda.yaml) - sem isso o sync inteiro falha
+      # antes mesmo de criar os recursos normais do app (incluindo o secret
+      # do Vault em kube-prometheus-stack-extras).
+      - ServerSideApply=true
