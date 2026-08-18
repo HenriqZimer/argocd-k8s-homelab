@@ -1,0 +1,13 @@
+# ServiceAccount + ClusterRoleBinding (cluster-admin) sao criados pelo
+# proprio chart (serviceAccount.create / clusterRoleBinding.create, default
+# true) - login por token gerado a partir dessa ServiceAccount, sem precisar
+# de recursos extra (ver README sobre "charts locais" so pra quando falta
+# algo que o chart publico nao cobre).
+ingress:
+  enabled: true
+  ingressClassName: traefik
+  hosts:
+    - host: dashboard.henriqzimer.com.br
+      paths:
+        - path: /
+          type: ImplementationSpecific

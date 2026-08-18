@@ -1,25 +1,22 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: kubernetes-dashboard
+  name: headlamp
   namespace: development
   annotations:
     argocd.argoproj.io/sync-wave: "5"
 spec:
   project: homelab
   sources:
-    - repoURL: https://kubernetes.github.io/dashboard/
-      chart: kubernetes-dashboard
-      targetRevision: "7.14.0"
+    - repoURL: https://kubernetes-sigs.github.io/headlamp/
+      chart: headlamp
+      targetRevision: "0.44.0"
       helm:
         valueFiles:
-          - $values/values/monitoring/kubernetes-dashboard.yaml
+          - $values/values/monitoring/headlamp.yaml
     - repoURL: https://github.com/henriqzimer/argocd-k8s-homelab.git
       targetRevision: main
       ref: values
-    - repoURL: https://github.com/henriqzimer/argocd-k8s-homelab.git
-      targetRevision: main
-      path: charts/kubernetes-dashboard-extras
   destination:
     server: https://kubernetes.default.svc
     namespace: monitoring
