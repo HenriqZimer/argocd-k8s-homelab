@@ -31,6 +31,7 @@ spec:
     - https://grafana.github.io/helm-charts
     - https://portainer.github.io/k8s/
     - https://otwld.github.io/ollama-helm/
+    - https://kubernetes.github.io/dashboard/
     - ghcr.io/sergelogvinov/charts
     - 8gears.container-registry.com/library
   destinations:
