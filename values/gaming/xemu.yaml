@@ -62,6 +62,11 @@ envFrom:
 nodeSelector:
   nvidia.com/gpu.present: "true"
 
+# -- Subido de 2Gi (default do chart) pra 4Gi (2026-08-18): shm memory-backed,
+# usado como buffer de captura de tela do Selkies em full-frame streaming
+# mode. Cabe dentro do limite de memoria do pod (6Gi) com folga.
+shmSize: 4Gi
+
 streaming:
   enabled: true
 
@@ -93,9 +98,15 @@ persistence:
     size: 10Gi
 
 resources:
+  # -- Requests subidos de 100m/256Mi para 500m/512Mi (2026-08-18): reserva
+  # um pouco mais de CPU/RAM garantidos (cgroup shares) pra nao sofrer
+  # throttling quando outro pod no mesmo node (moltres) tambem estiver sob
+  # carga. O node tem folga de sobra - ver `kubectl top node moltres`.
   requests:
-    cpu: 100m
-    memory: 256Mi
+    cpu: 500m
+    memory: 512Mi
+  # -- Limite subido de 2 CPU/4Gi para 4 CPU/6Gi (2026-08-18): folga extra
+  # pro streaming full-frame - node tem sobra pra isso.
   limits:
-    cpu: "2"
-    memory: 4Gi
+    cpu: "4"
+    memory: 6Gi

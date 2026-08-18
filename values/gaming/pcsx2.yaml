@@ -62,6 +62,13 @@ envFrom:
 nodeSelector:
   nvidia.com/gpu.present: "true"
 
+# -- Subido de 2Gi (default do chart) pra 4Gi (2026-08-18): shm memory-backed,
+# usado pelo mmap "fastmem" do JIT (ver o comentario de shmSize la em cima
+# sobre o SIGBUS ja visto no EE recompiler) e como buffer de captura de
+# tela do Selkies em full-frame streaming mode - 2Gi era justo. Cabe
+# dentro do limite de memoria do pod (6Gi) com folga.
+shmSize: 4Gi
+
 streaming:
   enabled: true
 
@@ -106,9 +113,15 @@ persistence:
     size: 10Gi
 
 resources:
+  # -- Requests subidos de 100m/256Mi para 500m/512Mi (2026-08-18): reserva
+  # um pouco mais de CPU/RAM garantidos (cgroup shares) pra nao sofrer
+  # throttling quando outro pod no mesmo node (moltres) tambem estiver sob
+  # carga. O node tem folga de sobra - ver `kubectl top node moltres`.
   requests:
-    cpu: 100m
-    memory: 256Mi
+    cpu: 500m
+    memory: 512Mi
+  # -- Memoria subida de 6Gi para 8Gi (2026-08-18): folga extra pro shm de
+  # 4Gi (acima) + o proprio PCSX2, com sobra no node pra isso.
   limits:
     cpu: "3"
-    memory: 6Gi
+    memory: 8Gi

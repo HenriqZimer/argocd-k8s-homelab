@@ -63,6 +63,13 @@ envFrom:
 nodeSelector:
   nvidia.com/gpu.present: "true"
 
+# -- Subido de 2Gi (default do chart) pra 4Gi (2026-08-18): shm memory-backed,
+# usado pelo mmap "fastmem" do JIT (mesma razao do SIGBUS documentado no
+# pcsx2) e como buffer de captura de tela do Selkies em full-frame streaming
+# mode - com textura em alta res do Switch, 2Gi fica no limite. Cabe dentro
+# do limite de memoria do pod (8Gi) com folga.
+shmSize: 4Gi
+
 streaming:
   enabled: true
 
@@ -114,15 +121,19 @@ persistence:
     size: 10Gi
 
 resources:
+  # -- Requests subidos de 100m/256Mi para 500m/512Mi (2026-08-18): reserva
+  # um pouco mais de CPU/RAM garantidos (cgroup shares) pra nao sofrer
+  # throttling quando outro pod no mesmo node (moltres) tambem estiver sob
+  # carga. O node tem folga de sobra - ver `kubectl top node moltres`.
   requests:
-    cpu: 100m
-    memory: 256Mi
+    cpu: 500m
+    memory: 512Mi
   # -- Limite subido de 2 CPU/4Gi para 3 CPU/8Gi (2026-08-18): pod estava
   # sendo OOMKilled (exit 137) ao carregar um jogo (Switch emula shader
   # compilation + texturas em alta res, uso de RAM bem maior que os
-  # outros emuladores 2D/PS1-era deste values/gaming/). O node
-  # (talos-worker-3/moltres) tem folga de sobra pra isso - ver `kubectl
-  # top node moltres` antes de subir mais.
+  # outros emuladores 2D/PS1-era deste values/gaming/). CPU subido de novo
+  # pra 4 (2026-08-18) - JIT do Eden e single-thread-heavy, folga de sobra
+  # no node pra isso.
   limits:
-    cpu: "3"
+    cpu: "4"
     memory: 8Gi
