@@ -35,6 +35,23 @@ env:
   # emuladores + romm no mesmo node, so um deles conseguiria agendar).
   NVIDIA_VISIBLE_DEVICES: "all"
   NVIDIA_DRIVER_CAPABILITIES: "all"
+  # -- Reduz input lag (2026-08-18): o Selkies (streaming da KasmVNC) usa
+  # por padrao um pipeline pensado pra desktop parado (deteccao de "damage"
+  # + paint-over, so re-encoda a regiao que mudou, com um burst de
+  # qualidade quando a tela para de mudar). Pra jogo em fullscreen, tela
+  # inteira muda a cada frame o tempo todo - esse pipeline so acrescenta
+  # overhead. H264_STREAMING_MODE bypassa essa logica e encoda frame
+  # cheio direto (confirmado no codigo do linuxserver/pixelflux: "Bypass
+  # all VNC logic and work like a normal video encoder, higher constant
+  # CPU usage for fullscreen gaming/videos"). CBR fixo (em vez de CRF
+  # variavel) evita picos de tamanho de frame em cenas com muito
+  # movimento, que geram spikes de latencia; 30Mbps e generoso pra LAN
+  # gigabit com encode via NVENC (RTX 3050), sem gargalo de CPU.
+  SELKIES_H264_STREAMING_MODE: "true"
+  SELKIES_ENABLE_RATE_CONTROL: "true"
+  SELKIES_RATE_CONTROL_MODE: "cbr"
+  SELKIES_VIDEO_BITRATE: "30"
+  SELKIES_FRAMERATE: "60"
 
 envFrom:
   - secretRef:
