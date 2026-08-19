@@ -1,0 +1,4 @@
+apiVersion: v2
+name: avisa-ia-registry-creds
+description: Secret gitlab-registry-creds (docker pull) via Vault, replicado nos namespaces do avisa-ia
+version: 1.0.0

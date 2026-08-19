@@ -1,0 +1,22 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: avisa-ia-registry-creds
+  namespace: development
+  annotations:
+    argocd.argoproj.io/sync-wave: "5"
+spec:
+  project: homelab
+  source:
+    repoURL: https://github.com/henriqzimer/argocd-k8s-homelab.git
+    targetRevision: main
+    path: charts/avisa-ia-registry-creds
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: avisa-ia-prod
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
