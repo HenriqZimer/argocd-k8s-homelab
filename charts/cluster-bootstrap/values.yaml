@@ -5,3 +5,5 @@ namespaces:
     podSecurityPrivileged: true
   - name: scheduling
     podSecurityPrivileged: true
+  - name: security
+    podSecurityPrivileged: true

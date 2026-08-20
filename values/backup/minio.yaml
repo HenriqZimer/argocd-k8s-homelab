@@ -1,0 +1,24 @@
+# Object storage standalone - existe so pra servir de backend S3 pro Velero
+# (bucket velero-backups). PVC via a mesma NFS storage class do resto do
+# cluster.
+mode: standalone
+
+existingSecret: minio-root-credentials
+
+persistence:
+  enabled: true
+  storageClass: nfs-slowbro
+  size: 100Gi
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 1024Mi
+
+buckets:
+  - name: velero-backups
+    policy: none
+    purge: false

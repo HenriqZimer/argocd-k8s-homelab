@@ -1,0 +1,64 @@
+# Backup de cluster/PVs pro MinIO local (apps/09-backup/minio.yaml).
+# Sem CSI snapshot no nfs-subdir-provisioner - usa File System Backup
+# (node-agent/kopia) pra copiar os volumes diretamente.
+initContainers:
+  - name: velero-plugin-for-aws
+    image: velero/velero-plugin-for-aws:v1.13.0
+    imagePullPolicy: IfNotPresent
+    volumeMounts:
+      - mountPath: /target
+        name: plugins
+
+credentials:
+  useSecret: true
+  existingSecret: velero-minio-credentials
+
+configuration:
+  backupStorageLocation:
+    - name: default
+      provider: aws
+      bucket: velero-backups
+      default: true
+      credential:
+        name: velero-minio-credentials
+        key: cloud
+      config:
+        region: minio
+        s3Url: http://minio.backup.svc.cluster.local:9000
+        s3ForcePathStyle: true
+
+  # Sem VolumeSnapshotClass no cluster - todo PV e copiado via node-agent.
+  defaultVolumesToFsBackup: true
+
+snapshotsEnabled: false
+
+deployNodeAgent: true
+
+schedules:
+  daily-backup:
+    disabled: false
+    schedule: "0 3 * * *"
+    template:
+      ttl: "240h" # 10 dias
+      includedNamespaces:
+        - "*"
+      excludedNamespaces:
+        - gaming
+        - backup
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+nodeAgent:
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 1000m
+      memory: 1024Mi

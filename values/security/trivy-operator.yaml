@@ -1,0 +1,11 @@
+# Scan continuo de vulnerabilidade nas imagens rodando no cluster.
+trivy:
+  ignoreUnfixed: true
+
+operator:
+  replicas: 1
+  # Reduz a carga do scan inicial num homelab pequeno.
+  scanJobsConcurrentLimit: 2
+
+serviceMonitor:
+  enabled: true

@@ -1,0 +1,35 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: velero
+  namespace: development
+  annotations:
+    argocd.argoproj.io/sync-wave: "6"
+spec:
+  project: homelab
+  sources:
+    - repoURL: https://vmware-tanzu.github.io/helm-charts
+      chart: velero
+      targetRevision: "12.1.0"
+      helm:
+        valueFiles:
+          - $values/values/backup/velero.yaml
+    - repoURL: https://github.com/henriqzimer/argocd-k8s-homelab.git
+      targetRevision: main
+      ref: values
+    - repoURL: https://github.com/henriqzimer/argocd-k8s-homelab.git
+      targetRevision: main
+      path: charts/velero-extras
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: backup
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      # CRDs do Velero (Backup, Restore, Schedule etc) estouram o limite de
+      # 262144 bytes da annotation last-applied-configuration do apply
+      # client-side (mesmo motivo do fix em keda.yaml/kube-prometheus-stack.yaml).
+      - ServerSideApply=true

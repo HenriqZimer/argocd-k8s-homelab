@@ -1,0 +1,12 @@
+# Admission policy - homelab de um unico control plane, sem necessidade de HA.
+admissionController:
+  replicas: 1
+
+backgroundController:
+  replicas: 1
+
+cleanupController:
+  replicas: 1
+
+reportsController:
+  replicas: 1

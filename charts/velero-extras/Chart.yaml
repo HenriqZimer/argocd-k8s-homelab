@@ -1,0 +1,4 @@
+apiVersion: v2
+name: velero-extras
+description: Credenciais S3 (MinIO) do Velero no formato de arquivo AWS (via Vault)
+version: 1.0.0

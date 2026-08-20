@@ -35,6 +35,12 @@ spec:
     - https://kubernetes-sigs.github.io/headlamp/
     - ghcr.io/sergelogvinov/charts
     - 8gears.container-registry.com/library
+    - https://falcosecurity.github.io/charts
+    - https://kyverno.github.io/kyverno/
+    - https://aquasecurity.github.io/helm-charts/
+    - https://vmware-tanzu.github.io/helm-charts
+    - https://charts.min.io
+    - https://charts.fairwinds.com/stable
   destinations:
     - namespace: "*"
       server: https://kubernetes.default.svc

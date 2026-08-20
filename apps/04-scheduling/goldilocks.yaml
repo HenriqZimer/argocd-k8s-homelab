@@ -1,0 +1,28 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: goldilocks
+  namespace: development
+  annotations:
+    argocd.argoproj.io/sync-wave: "6"
+spec:
+  project: homelab
+  sources:
+    - repoURL: https://charts.fairwinds.com/stable
+      chart: goldilocks
+      targetRevision: "11.0.0"
+      helm:
+        valueFiles:
+          - $values/values/scheduling/goldilocks.yaml
+    - repoURL: https://github.com/henriqzimer/argocd-k8s-homelab.git
+      targetRevision: main
+      ref: values
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: scheduling
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

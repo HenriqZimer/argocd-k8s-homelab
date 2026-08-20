@@ -263,6 +263,28 @@ seed_vaultwarden_credentials() {
   )"
 }
 
+seed_minio_credentials() {
+  local root_user="${MINIO_ROOT_USER:-}"
+  local root_password="${MINIO_ROOT_PASSWORD:-}"
+
+  if [[ -z "${root_user}" ]]; then
+    root_user="$(secret_value backup minio-root-credentials rootUser)"
+    root_password="$(secret_value backup minio-root-credentials rootPassword)"
+  fi
+
+  # Usado so internamente (MinIO <-> Velero, dentro do cluster) - gera
+  # automaticamente na primeira vez, se ainda nao existir.
+  [[ -n "${root_user}" ]] || root_user="minio-admin"
+  [[ -n "${root_password}" ]] || root_password="$(openssl rand -hex 24)"
+
+  vault_kv_put minio-credentials "$(
+    jq -n \
+      --arg root_user "${root_user}" \
+      --arg root_password "${root_password}" \
+      '{"rootUser":$root_user, "rootPassword":$root_password}'
+  )"
+}
+
 seed_talos_worker_config() {
   local user_data
   local meta_data
@@ -357,4 +379,5 @@ seed_cert_manager_token
 seed_romm_credentials
 seed_streaming_broker_secret
 seed_vaultwarden_credentials
+seed_minio_credentials
 seed_talos_worker_config

@@ -1,0 +1,11 @@
+# So o recommender - modo "so recomendacao", sem resize automatico de pods.
+# O Goldilocks le as recomendacoes do recommender pra exibir no dashboard.
+recommender:
+  enabled: true
+  replicaCount: 1
+
+updater:
+  enabled: false
+
+admissionController:
+  enabled: false

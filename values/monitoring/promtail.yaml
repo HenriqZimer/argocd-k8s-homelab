@@ -1,0 +1,8 @@
+# Agente que coleta os logs dos nos e envia pro Loki (mesmo namespace).
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    cpu: 200m
+    memory: 128Mi

@@ -1,0 +1,14 @@
+# VPA (recommender) instalado separadamente em apps/04-scheduling/vpa.yaml.
+vpa:
+  enabled: false
+
+controller:
+  # Monitora todos os namespaces sem precisar do label
+  # goldilocks.fairwinds.com/enabled=true em cada um.
+  flags:
+    on-by-default: true
+
+dashboard:
+  replicaCount: 1
+  flags:
+    on-by-default: true

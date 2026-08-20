@@ -1,0 +1,4 @@
+apiVersion: v2
+name: minio-extras
+description: Credenciais root do MinIO (via Vault)
+version: 1.0.0

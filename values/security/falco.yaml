@@ -1,0 +1,26 @@
+# Runtime security - detecta comportamento anomalo em containers/nos via eBPF.
+driver:
+  kind: modern_ebpf
+
+collectors:
+  containerEngine:
+    engines:
+      # Talos usa containerd puro (socket /run/containerd/containerd.sock,
+      # ja coberto pelo engine "cri" default) - docker/podman nao existem.
+      docker:
+        enabled: false
+      podman:
+        enabled: false
+
+falcosidekick:
+  enabled: false
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 512Mi
+  limits:
+    cpu: 500m
+    memory: 1024Mi
+
+tty: false
