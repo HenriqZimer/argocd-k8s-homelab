@@ -41,6 +41,14 @@ env:
   # -- Obrigatorio pro Sunshine (ver comentario no topo do arquivo).
   PIXELFLUX_WAYLAND: "false"
 
+# -- Com hostNetwork (sunshine.hostNetwork abaixo), TODAS as portas do pod
+# viram portas do host - nao so as do Sunshine. Dolphin usa os defaults
+# 3000/3001 (KasmVNC http/https) - precisa deslocar aqui tambem, senao
+# colide igual as portas do Sunshine (ver comentario no bloco sunshine).
+service:
+  httpPort: 3010
+  httpsPort: 3011
+
 sunshine:
   enabled: true
   hostNetwork: true
