@@ -18,14 +18,31 @@
 # frame. Requer DNS local: aponte dolphin-stream.henriqzimer.com.br para
 # 192.168.1.150 (via /etc/hosts no seu dispositivo ou um registro local no
 # Pi-hole - 192.168.1.106).
+#
+# Sunshine/Moonlight (2026-08-20, POC): sunshine.enabled roda o Sunshine ao
+# lado do Selkies, pra testar se Moonlight tira o input lag que sobra
+# mesmo com o tuning do Selkies acima. Detalhes completos (por que precisa
+# de cada coisa) no README do mod: github.com/henriqzimer/dolphin-sunshine-mod
+# - PIXELFLUX_WAYLAND=false: a imagem roda em Wayland por padrao: Sunshine
+#   so consegue capturar via Xvfb/Xorg (X11), nao Wayland.
+# - hostNetwork/privileged (no bloco sunshine: abaixo): Moonlight fala
+#   TCP+UDP cru (nao passa pelo Traefik) e o pod precisa da network
+#   namespace do host pros eventos de hotplug do uinput chegarem no udev
+#   dentro do container - sem isso, os dispositivos virtuais de
+#   mouse/teclado/gamepad que o Sunshine cria ficam invisiveis pro X.
+# - Acesso: parear o app Moonlight direto pelo IP do node moltres (o pod
+#   fica na rede do host) - nao tem Service/Ingress pra essas portas.
 
 env:
   PUID: "1000"
   PGID: "1000"
   TZ: "America/Sao_Paulo"
   TITLE: "Dolphin"
-  # -- Docker Mod que adiciona o broker de streaming do RomM.
-  DOCKER_MODS: "ghcr.io/loneangelfayt/dolphin-romm-integration-mod:latest"
+  # -- Docker Mods (aplicados em ordem, separados por "|"): o broker de
+  # streaming do RomM + o mod do Sunshine (POC).
+  DOCKER_MODS: "ghcr.io/loneangelfayt/dolphin-romm-integration-mod:latest|ghcr.io/henriqzimer/dolphin-sunshine-mod:latest"
+  # -- Obrigatorio pro Sunshine (ver comentario no topo do arquivo).
+  PIXELFLUX_WAYLAND: "false"
   # -- Precisa ser o mesmo path onde o romm monta a library (romm.persistence.library -> /romm/library).
   ROM_ROOT: "/romm/library"
   # -- Expoe a GPU NVIDIA do node pro container. O runtime "nvidia" ja e o
@@ -69,6 +86,11 @@ shmSize: 4Gi
 
 streaming:
   enabled: true
+
+sunshine:
+  enabled: true
+  hostNetwork: true
+  privileged: true
 
 ingress:
   enabled: true
