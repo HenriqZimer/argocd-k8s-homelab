@@ -63,9 +63,15 @@ persistence:
     size: 10Gi
 
 resources:
+  # -- Requests subidos de 100m/256Mi para 500m/1Gi e limits de 2 CPU/4Gi
+  # para 4 CPU/8Gi (2026-08-20): ShadPS4 (PS5) e um dos emuladores mais
+  # pesados desse values/gaming/ - o teto antigo era o mesmo usado pro
+  # PSP/Dreamcast/3DS, sistemas bem mais leves. Node (moltres) tem folga
+  # de sobra pra isso - mesmo padrao ja aplicado nos 4 emuladores com
+  # streaming (ver commit a39112c).
   requests:
-    cpu: 100m
-    memory: 256Mi
+    cpu: 500m
+    memory: 1Gi
   limits:
-    cpu: "2"
-    memory: 4Gi
+    cpu: "4"
+    memory: 8Gi
