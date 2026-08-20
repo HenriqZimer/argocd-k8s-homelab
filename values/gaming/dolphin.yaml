@@ -1,6 +1,12 @@
 # Dolphin (GameCube/Wii emulator) - web KasmVNC desktop, sem database
 # proprio (nao usa um Secret "-credentials" dedicado como o romm).
 #
+# replicaCount: 0 (2026-08-20, temporario): derrubado pra liberar CPU no
+# moltres enquanto valida o azahar-sunshine-mod - com os dois emuladores
+# rodando Xorg/Selkies/Sunshine/NVENC ao mesmo tempo (mais o
+# argocd-application-controller reconciliando), o node bateu load average
+# 30+ (8 CPUs) e o kubelet ficou instavel. Reverter pra 1 quando a POC do
+# azahar estiver validada.
 # persistence.config habilitada (PVC via nfs-slowbro) - sem isso,
 # saves/config nao sobreviveriam a um restart do pod.
 #
@@ -32,6 +38,8 @@
 #   mouse/teclado/gamepad que o Sunshine cria ficam invisiveis pro X.
 # - Acesso: parear o app Moonlight direto pelo IP do node moltres (o pod
 #   fica na rede do host) - nao tem Service/Ingress pra essas portas.
+
+replicaCount: 0
 
 env:
   PUID: "1000"
