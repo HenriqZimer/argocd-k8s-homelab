@@ -10,7 +10,7 @@ spec:
   sources:
     - repoURL: https://henriqzimer.github.io/dolphin-helm-chart
       chart: dolphin
-      targetRevision: "1.3.0"
+      targetRevision: "1.3.1"
       helm:
         valueFiles:
           - $values/values/gaming/dolphin.yaml
