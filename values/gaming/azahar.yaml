@@ -11,6 +11,18 @@
 # Ingress: exposto via Traefik sob henriqzimer.com.br, so LAN (requer DNS
 # local - Pi-hole em 192.168.1.106 - apontando azahar-stream para
 # 192.168.1.160, o LoadBalancer do Traefik nesse cluster).
+#
+# Sunshine/Moonlight (2026-08-20, POC): sunshine.enabled roda o Sunshine ao
+# lado do Selkies, mesmo approach do dolphin (ver comentario la pro motivo
+# completo). Detalhes: github.com/henriqzimer/azahar-sunshine-mod
+# - PIXELFLUX_WAYLAND=false: a imagem roda em Wayland por padrao; Sunshine
+#   so consegue capturar via Xorg (X11), nao Wayland.
+# - hostNetwork/privileged (no bloco sunshine: abaixo): Moonlight fala
+#   TCP+UDP cru (nao passa pelo Traefik) e o pod precisa da network
+#   namespace do host pros eventos de hotplug do uinput chegarem no udev
+#   dentro do container.
+# - Acesso: parear o app Moonlight direto pelo IP do node moltres (o pod
+#   fica na rede do host) - nao tem Service/Ingress pra essas portas.
 
 env:
   PUID: "1000"
@@ -24,6 +36,15 @@ env:
   # varios emuladores + romm no mesmo node, so um deles conseguiria agendar).
   NVIDIA_VISIBLE_DEVICES: "all"
   NVIDIA_DRIVER_CAPABILITIES: "all"
+  # -- Docker Mod do Sunshine (POC).
+  DOCKER_MODS: "ghcr.io/henriqzimer/azahar-sunshine-mod:latest"
+  # -- Obrigatorio pro Sunshine (ver comentario no topo do arquivo).
+  PIXELFLUX_WAYLAND: "false"
+
+sunshine:
+  enabled: true
+  hostNetwork: true
+  privileged: true
 
 # -- Fixa no worker com a RTX 3050 (unico node com GPU no cluster).
 nodeSelector:
