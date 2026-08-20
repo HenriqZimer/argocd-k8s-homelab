@@ -972,7 +972,15 @@ controller:
 
   # -- [Node selector]
   # @default -- `{}` (defaults to global.nodeSelector)
-  nodeSelector: {}
+  # Fixado no moltres (2026-08-20): zapdos (onde o controller rodava por
+  # default) so tem ~3.5Gi de RAM alocavel, insuficiente pra reconciliar
+  # as ~45 Applications deste homelab de uma vez - confirmado via dmesg do
+  # node (runtime.OOMController matando repetidamente o processo do
+  # controller e outros pods no mesmo node havia 2h+, travando qualquer
+  # sync no cluster). moltres tem ~32Gi alocavel (e ja e o node com a GPU,
+  # roda a carga mais pesada do cluster de qualquer forma).
+  nodeSelector:
+    kubernetes.io/hostname: moltres
 
   # -- [Tolerations] for use with node taints
   # @default -- `[]` (defaults to global.tolerations)
