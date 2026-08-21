@@ -38,6 +38,12 @@ env:
   # emulador com sunshine.enabled precisa de um DISPLAY unico (dolphin=1,
   # azahar=2, pcsx2=3, rpcs3=4, xemu=5, flycast=6).
   DISPLAY: ":5"
+  # -- streaming.brokerPort (abaixo) so muda o containerPort declarado no
+  # Deployment - o broker le a porta de BROKER_PORT (default 8000,
+  # hardcoded no proprio script), entao sem isso ele continuaria
+  # tentando bindar 8000 e colidindo com o dolphin - ver comentario
+  # equivalente no pcsx2.yaml (confirmado la com "Address already in use").
+  BROKER_PORT: "8002"
   # -- Expoe a GPU NVIDIA do node pro container. O runtime "nvidia" ja e o
   # default do containerd em talos-worker-3 (ver locals.tf do
   # terraform-homelab), entao nao precisa de RuntimeClass nem do resource
