@@ -92,6 +92,9 @@ shmSize: 4Gi
 
 streaming:
   enabled: true
+  # -- brokerPort default (8000) colide com o dolphin, que tambem tem
+  # streaming.enabled com hostNetwork (via sunshine) no mesmo node.
+  brokerPort: 8002
 
 ingress:
   enabled: true
