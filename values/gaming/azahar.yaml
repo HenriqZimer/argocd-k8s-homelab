@@ -24,13 +24,6 @@
 # - Acesso: parear o app Moonlight direto pelo IP do node moltres (o pod
 #   fica na rede do host) - nao tem Service/Ingress pra essas portas.
 
-# replicaCount: 0 (teste temporario, 2026-08-21): pausado pra liberar as
-# portas 3000/3001 do Selkies (hardcoded, colidem com o dolphin) enquanto
-# testa se o bug de gamepad zero-eventos do Sunshine reproduz no dolphin
-# tambem (base Debian, binario diferente do azahar/Arch). Reverter apos o
-# teste.
-replicaCount: 0
-
 env:
   PUID: "1000"
   PGID: "1000"
@@ -69,6 +62,16 @@ sunshine:
   # requested pod ports"). Todas as outras portas do Sunshine sao offsets
   # fixos a partir desta (ver comentario no values.yaml do chart).
   port: 48089
+
+# -- Precisa ficar false enquanto dolphin (que tambem usa sunshine.hostNetwork)
+# roda simultaneo no mesmo node: o nginx do Selkies escuta em 3000/3001
+# hardcoded (nao configuravel), entao o segundo pod nunca consegue bindar
+# essa porta - sem desligar a probe, o kubelet mata o container em
+# crashloop mesmo com o Sunshine funcionando normalmente. Tradeoff: a UI
+# web (KasmVNC) do azahar fica inacessivel enquanto os dois rodam juntos -
+# o Moonlight nao e afetado. Reverter pra true se voltar a rodar sozinho.
+probes:
+  enabled: false
 
 # -- Fixa no worker com a RTX 3050 (unico node com GPU no cluster).
 nodeSelector:
