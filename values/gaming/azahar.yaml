@@ -53,21 +53,13 @@ sunshine:
   enabled: true
   hostNetwork: true
   privileged: true
-  # -- Portas deslocadas +100 em relacao ao default (47984 etc): com
-  # hostNetwork, dolphin e azahar disputam o MESMO IP (o unico node com
-  # GPU, moltres) - nas portas default colidem e um dos dois fica
+  # -- Porta base deslocada +100 em relacao ao default do Sunshine (47989):
+  # com hostNetwork, dolphin e azahar disputam o MESMO IP (o unico node
+  # com GPU, moltres) - nas portas default colidem e um dos dois fica
   # Pending pra sempre (confirmado: "didn't have free ports for the
-  # requested pod ports"). So um emulador Sunshine pode usar cada faixa
-  # de porta por vez nesse node.
-  ports:
-    web: 48090
-    http: 48089
-    https: 48084
-    rtsp: 48110
-    video: 48098
-    control: 48099
-    audio: 48100
-    mic: 48102
+  # requested pod ports"). Todas as outras portas do Sunshine sao offsets
+  # fixos a partir desta (ver comentario no values.yaml do chart).
+  port: 48089
 
 # -- Fixa no worker com a RTX 3050 (unico node com GPU no cluster).
 nodeSelector:
