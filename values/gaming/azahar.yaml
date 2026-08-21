@@ -41,14 +41,16 @@ env:
   # -- Obrigatorio pro Sunshine (ver comentario no topo do arquivo).
   PIXELFLUX_WAYLAND: "false"
 
-# -- Com hostNetwork (sunshine.hostNetwork abaixo), TODAS as portas do pod
-# viram portas do host - nao so as do Sunshine. Dolphin usa os defaults
-# 3000/3001 (KasmVNC http/https) - precisa deslocar aqui tambem, senao
-# colide igual as portas do Sunshine (ver comentario no bloco sunshine).
-service:
-  httpPort: 3010
-  httpsPort: 3011
-
+# -- NAO desloque service.httpPort/httpsPort pra fugir da colisao com o
+# dolphin (ja tentei - ver git blame): o nginx do Selkies dentro da
+# imagem esta hardcoded pra escutar em 3000/3001, ignorando esse valor -
+# so muda o Service/containerPort/probes do k8s, nunca o processo real.
+# Confirmado: com o valor customizado, a liveness/readiness probe (que
+# usa esse valor) apontava pra uma porta que o nginx nunca escuta,
+# causando crashloop. CONCLUSAO REAL: com hostNetwork, dolphin e azahar
+# NAO PODEM rodar ao mesmo tempo no mesmo node - as portas 3000/3001 do
+# Selkies sempre colidem, sem solucao via config. So um dos dois por vez
+# (ver replicaCount: 0 no values do dolphin).
 sunshine:
   enabled: true
   hostNetwork: true
