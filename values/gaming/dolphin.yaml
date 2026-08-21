@@ -39,7 +39,7 @@
 # - Acesso: parear o app Moonlight direto pelo IP do node moltres (o pod
 #   fica na rede do host) - nao tem Service/Ingress pra essas portas.
 
-replicaCount: 0
+replicaCount: 1
 
 env:
   PUID: "1000"
