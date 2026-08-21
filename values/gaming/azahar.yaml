@@ -38,6 +38,13 @@ env:
   NVIDIA_DRIVER_CAPABILITIES: "all"
   # -- Docker Mod do Sunshine (POC).
   DOCKER_MODS: "ghcr.io/henriqzimer/azahar-sunshine-mod:latest"
+  # -- Sockets Unix abstratos do X11 (@/tmp/.X11-unix/X1) sao compartilhados
+  # pelo NETWORK NAMESPACE, nao pelo mount namespace do container - como
+  # azahar e dolphin usam hostNetwork:true simultaneos no mesmo node, os
+  # dois tentando :1 (default da imagem) colidem ("server already
+  # running") mesmo estando em containers/filesystems totalmente
+  # separados. Desloca o azahar pra :2 pra evitar a colisao.
+  DISPLAY: ":2"
   # -- Obrigatorio pro Sunshine (ver comentario no topo do arquivo).
   PIXELFLUX_WAYLAND: "false"
 
