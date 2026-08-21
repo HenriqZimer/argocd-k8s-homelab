@@ -24,6 +24,13 @@
 # - Acesso: parear o app Moonlight direto pelo IP do node moltres (o pod
 #   fica na rede do host) - nao tem Service/Ingress pra essas portas.
 
+# replicaCount: 0 (teste temporario, 2026-08-21): pausado pra liberar as
+# portas 3000/3001 do Selkies (hardcoded, colidem com o dolphin) enquanto
+# testa se o bug de gamepad zero-eventos do Sunshine reproduz no dolphin
+# tambem (base Debian, binario diferente do azahar/Arch). Reverter apos o
+# teste.
+replicaCount: 0
+
 env:
   PUID: "1000"
   PGID: "1000"
