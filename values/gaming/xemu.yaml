@@ -25,10 +25,19 @@ env:
   PGID: "1000"
   TZ: "America/Sao_Paulo"
   TITLE: "xemu"
-  # -- Docker Mod que adiciona o broker de streaming do RomM.
-  DOCKER_MODS: "ghcr.io/loneangelfayt/xemu-romm-integration-mod:latest"
+  # -- Docker Mods: broker de streaming do RomM + Sunshine/Moonlight (POC).
+  DOCKER_MODS: "ghcr.io/loneangelfayt/xemu-romm-integration-mod:latest|ghcr.io/henriqzimer/xemu-sunshine-mod:latest"
   # -- Precisa ser o mesmo path onde o romm monta a library (romm.persistence.library -> /romm/library).
   ROM_ROOT: "/romm/library"
+  # -- Obrigatorio pro Sunshine (a imagem roda em Wayland por padrao, Sunshine so captura via Xorg/X11).
+  PIXELFLUX_WAYLAND: "false"
+  # -- Sockets Unix abstratos do X11 sao compartilhados pelo NETWORK
+  # NAMESPACE, nao pelo mount namespace do container - com varios pods
+  # sunshine.hostNetwork simultaneos no mesmo node, todos tentando :1
+  # (default da imagem) colidem ("server already running"). Cada
+  # emulador com sunshine.enabled precisa de um DISPLAY unico (dolphin=1,
+  # azahar=2, pcsx2=3, rpcs3=4, xemu=5, flycast=6).
+  DISPLAY: ":5"
   # -- Expoe a GPU NVIDIA do node pro container. O runtime "nvidia" ja e o
   # default do containerd em talos-worker-3 (ver locals.tf do
   # terraform-homelab), entao nao precisa de RuntimeClass nem do resource
@@ -57,6 +66,20 @@ env:
 envFrom:
   - secretRef:
       name: streaming-broker-secret
+
+sunshine:
+  enabled: true
+  hostNetwork: true
+  privileged: true
+  # -- Porta unica por emulador (todas as outras portas do Sunshine sao
+  # offsets fixos a partir desta - ver comentario no values.yaml do chart).
+  port: 48389
+
+# -- Precisa ficar false enquanto outros emuladores com sunshine.hostNetwork
+# rodam simultaneos no mesmo node (nginx do Selkies hardcoded em 3000/3001,
+# colide entre pods) - ver comentario equivalente no azahar.yaml.
+probes:
+  enabled: false
 
 # -- Fixa no worker com a RTX 3050 (unico node com GPU no cluster).
 nodeSelector:
