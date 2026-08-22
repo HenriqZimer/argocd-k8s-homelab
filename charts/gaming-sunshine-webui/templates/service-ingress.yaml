@@ -1,0 +1,50 @@
+{{- range .Values.emulators }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .name }}-sunshine-webui
+  namespace: gaming
+  labels:
+    app.kubernetes.io/name: {{ .name }}
+    app.kubernetes.io/component: sunshine-webui
+spec:
+  # -- Seleciona o mesmo pod do Deployment do emulador pelas labels
+  # padrao do chart (app.kubernetes.io/name/instance) - como o pod e
+  # hostNetwork:true, o "pod IP" que o Service usa como endpoint E o IP
+  # do node, entao isso funciona sem hardcodar IP em lugar nenhum.
+  selector:
+    app.kubernetes.io/name: {{ .name }}
+    app.kubernetes.io/instance: {{ .name }}
+  ports:
+    - name: https
+      port: 443
+      targetPort: {{ .webPort }}
+      protocol: TCP
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .name }}-sunshine-webui
+  namespace: gaming
+  labels:
+    app.kubernetes.io/name: {{ .name }}
+    app.kubernetes.io/component: sunshine-webui
+  annotations:
+    # -- Backend serve HTTPS com cert autoassinado - ver serverstransport.yaml.
+    traefik.ingress.kubernetes.io/service.serversscheme: https
+    traefik.ingress.kubernetes.io/service.serverstransport: gaming-sunshine-webui-insecure@kubernetescrd
+spec:
+  ingressClassName: {{ $.Values.ingressClassName }}
+  rules:
+    - host: {{ .host | quote }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ .name }}-sunshine-webui
+                port:
+                  name: https
+---
+{{- end }}

@@ -1,0 +1,4 @@
+apiVersion: v2
+name: gaming-sunshine-webui
+description: Service + Ingress pra expor a Web UI (config/pareamento) do Sunshine de cada emulador via Traefik
+version: 1.0.0

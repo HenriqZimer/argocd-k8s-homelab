@@ -1,0 +1,15 @@
+# A Web UI do Sunshine so serve HTTPS (nunca HTTP puro), com um
+# certificado autoassinado - sem isso o Traefik tenta conectar no
+# backend via HTTP (protocolo errado) ou rejeita o cert autoassinado.
+# insecureSkipVerify e seguro aqui: o trafego Traefik->pod fica dentro do
+# cluster/LAN, o cert autoassinado do Sunshine em si ja nao serve pra
+# autenticacao alguma (e gerado local, sem CA), so criptografa o
+# transporte - o Traefik na frente e quem apresenta o certificado
+# wildcard de verdade pro navegador do usuario.
+apiVersion: traefik.io/v1alpha1
+kind: ServersTransport
+metadata:
+  name: gaming-sunshine-webui-insecure
+  namespace: gaming
+spec:
+  insecureSkipVerify: true

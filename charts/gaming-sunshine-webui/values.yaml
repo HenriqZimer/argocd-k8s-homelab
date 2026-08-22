@@ -1,0 +1,36 @@
+# -- Cada entrada gera um Service (seleciona o pod pelas labels padrao do
+# chart do emulador, app.kubernetes.io/name=<name>) + um Ingress apontando
+# pra porta da Web UI do Sunshine (base+1, offset fixo do Sunshine). Como
+# os pods sao hostNetwork:true, o Service resolve certo pro IP do node
+# automaticamente (o "pod IP" deles E o IP do node) - nao precisa
+# hardcodar IP em lugar nenhum, mesmo se o pod trocar de node no futuro.
+emulators:
+  - name: dolphin
+    host: dolphin-sunshine.henriqzimer.com.br
+    webPort: 47990
+  - name: azahar
+    host: azahar-sunshine.henriqzimer.com.br
+    webPort: 48090
+  - name: pcsx2
+    host: pcsx2-sunshine.henriqzimer.com.br
+    webPort: 48190
+  - name: rpcs3
+    host: rpcs3-sunshine.henriqzimer.com.br
+    webPort: 48290
+  - name: xemu
+    host: xemu-sunshine.henriqzimer.com.br
+    webPort: 48390
+  - name: flycast
+    host: flycast-sunshine.henriqzimer.com.br
+    webPort: 48490
+  - name: eden
+    host: eden-sunshine.henriqzimer.com.br
+    webPort: 48590
+  - name: ppsspp
+    host: ppsspp-sunshine.henriqzimer.com.br
+    webPort: 48690
+  - name: shadps4
+    host: shadps4-sunshine.henriqzimer.com.br
+    webPort: 48790
+
+ingressClassName: traefik
