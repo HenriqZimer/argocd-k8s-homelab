@@ -26,10 +26,27 @@ env:
   PGID: "1000"
   TZ: "America/Sao_Paulo"
   TITLE: "Eden"
-  # -- Docker Mod que adiciona o broker de streaming do RomM.
-  DOCKER_MODS: "ghcr.io/loneangelfayt/eden-romm-integration-mod:latest"
+  # -- Docker Mods: broker de streaming do RomM + Sunshine/Moonlight.
+  # AVISO: a imagem do Eden tem o modo X11 quebrado upstream (autostart
+  # corrompido/hardcoded pra "platform not supported") - o mod recebeu so
+  # o fix de permissao do uhid, sem o wrapper LD_PRELOAD que os outros 6
+  # emuladores tem. O controle pode nao responder DENTRO do Eden mesmo
+  # com Sunshine funcionando (mouse/teclado devem funcionar normal).
+  DOCKER_MODS: "ghcr.io/loneangelfayt/eden-romm-integration-mod:latest|ghcr.io/henriqzimer/eden-sunshine-mod:latest"
   # -- Precisa ser o mesmo path onde o romm monta a library (romm.persistence.library -> /romm/library).
   ROM_ROOT: "/romm/library"
+  # -- Obrigatorio pro Sunshine (a imagem roda em Wayland por padrao, Sunshine so captura via Xorg/X11).
+  PIXELFLUX_WAYLAND: "false"
+  # -- Sockets Unix abstratos do X11 sao compartilhados pelo NETWORK
+  # NAMESPACE, nao pelo mount namespace do container - varios pods
+  # sunshine.hostNetwork simultaneos no mesmo node precisam de DISPLAY
+  # unico (dolphin=1, azahar=2, pcsx2=3, rpcs3=4, xemu=5, flycast=6,
+  # eden=7).
+  DISPLAY: ":7"
+  # -- streaming.brokerPort (abaixo) so muda o containerPort declarado no
+  # Deployment - o broker le a porta de BROKER_PORT (default 8000,
+  # hardcoded), entao sem isso colidiria com o dolphin.
+  BROKER_PORT: "8003"
   # -- Expoe a GPU NVIDIA do node pro container. O runtime "nvidia" ja e o
   # default do containerd em talos-worker-3 (ver locals.tf do
   # terraform-homelab), entao nao precisa de RuntimeClass nem do resource
@@ -72,6 +89,23 @@ shmSize: 4Gi
 
 streaming:
   enabled: true
+  # -- brokerPort default (8000) colide com o dolphin, que tambem tem
+  # streaming.enabled com hostNetwork (via sunshine) no mesmo node.
+  brokerPort: 8003
+
+sunshine:
+  enabled: true
+  hostNetwork: true
+  privileged: true
+  # -- Porta unica por emulador (todas as outras portas do Sunshine sao
+  # offsets fixos a partir desta - ver comentario no values.yaml do chart).
+  port: 48589
+
+# -- Precisa ficar false enquanto outros emuladores com sunshine.hostNetwork
+# rodam simultaneos no mesmo node (nginx do Selkies hardcoded em 3000/3001,
+# colide entre pods) - ver comentario equivalente no azahar.yaml.
+probes:
+  enabled: false
 
 ingress:
   enabled: true
