@@ -7,6 +7,13 @@ metadata:
   labels:
     app.kubernetes.io/name: {{ .name }}
     app.kubernetes.io/component: sunshine-webui
+  annotations:
+    # -- Anotacoes de proxy do Traefik pra Kubernetes Ingress (nao
+    # IngressRoute) vao no SERVICE, nao no Ingress - confirmado: com elas
+    # no Ingress, o Traefik ignorava e tentava verificar o cert
+    # autoassinado normalmente ("x509: cannot validate certificate").
+    traefik.ingress.kubernetes.io/service.serversscheme: https
+    traefik.ingress.kubernetes.io/service.serverstransport: gaming-sunshine-webui-insecure@kubernetescrd
 spec:
   # -- Seleciona o mesmo pod do Deployment do emulador pelas labels
   # padrao do chart (app.kubernetes.io/name/instance) - como o pod e
@@ -29,10 +36,6 @@ metadata:
   labels:
     app.kubernetes.io/name: {{ .name }}
     app.kubernetes.io/component: sunshine-webui
-  annotations:
-    # -- Backend serve HTTPS com cert autoassinado - ver serverstransport.yaml.
-    traefik.ingress.kubernetes.io/service.serversscheme: https
-    traefik.ingress.kubernetes.io/service.serverstransport: gaming-sunshine-webui-insecure@kubernetescrd
 spec:
   ingressClassName: {{ $.Values.ingressClassName }}
   rules:
