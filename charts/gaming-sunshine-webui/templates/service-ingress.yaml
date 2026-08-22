@@ -7,13 +7,6 @@ metadata:
   labels:
     app.kubernetes.io/name: {{ .name }}
     app.kubernetes.io/component: sunshine-webui
-  annotations:
-    # -- Anotacoes de proxy do Traefik pra Kubernetes Ingress (nao
-    # IngressRoute) vao no SERVICE, nao no Ingress - confirmado: com elas
-    # no Ingress, o Traefik ignorava e tentava verificar o cert
-    # autoassinado normalmente ("x509: cannot validate certificate").
-    traefik.ingress.kubernetes.io/service.serversscheme: https
-    traefik.ingress.kubernetes.io/service.serverstransport: gaming-sunshine-webui-insecure@kubernetescrd
 spec:
   # -- Seleciona o mesmo pod do Deployment do emulador pelas labels
   # padrao do chart (app.kubernetes.io/name/instance) - como o pod e
@@ -28,8 +21,16 @@ spec:
       targetPort: {{ .webPort }}
       protocol: TCP
 ---
-apiVersion: networking.k8s.io/v1
-kind: Ingress
+# IngressRoute (CRD nativa do Traefik) em vez de Ingress + anotacoes: o
+# ServersTransport referenciado via anotacao
+# ("traefik.ingress.kubernetes.io/service.serverstransport") num Ingress
+# comum falhava com "servers transport not found ...@kubernetescrd" mesmo
+# com o recurso existindo e a anotacao no lugar certo (Service, nao
+# Ingress - ja corrigimos isso, mas o erro persistiu). IngressRoute tem o
+# campo serversTransport tipado direto no service, sem essa resolucao
+# fragil por string - resolve de vez.
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
 metadata:
   name: {{ .name }}-sunshine-webui
   namespace: gaming
@@ -37,17 +38,16 @@ metadata:
     app.kubernetes.io/name: {{ .name }}
     app.kubernetes.io/component: sunshine-webui
 spec:
-  ingressClassName: {{ $.Values.ingressClassName }}
-  rules:
-    - host: {{ .host | quote }}
-      http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: {{ .name }}-sunshine-webui
-                port:
-                  name: https
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`{{ .host }}`)
+      kind: Rule
+      services:
+        - name: {{ .name }}-sunshine-webui
+          port: 443
+          scheme: https
+          serversTransport: gaming-sunshine-webui-insecure
+  tls: {}
 ---
 {{- end }}

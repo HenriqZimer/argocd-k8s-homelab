@@ -1,7 +1,8 @@
 # -- Cada entrada gera um Service (seleciona o pod pelas labels padrao do
-# chart do emulador, app.kubernetes.io/name=<name>) + um Ingress apontando
-# pra porta da Web UI do Sunshine (base+1, offset fixo do Sunshine). Como
-# os pods sao hostNetwork:true, o Service resolve certo pro IP do node
+# chart do emulador, app.kubernetes.io/name=<name>) + uma IngressRoute
+# (CRD do Traefik, nao Ingress comum - ver comentario no template) pra
+# porta da Web UI do Sunshine (base+1, offset fixo do Sunshine). Como os
+# pods sao hostNetwork:true, o Service resolve certo pro IP do node
 # automaticamente (o "pod IP" deles E o IP do node) - nao precisa
 # hardcodar IP em lugar nenhum, mesmo se o pod trocar de node no futuro.
 emulators:
