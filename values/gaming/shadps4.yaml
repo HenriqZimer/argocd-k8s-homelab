@@ -24,6 +24,33 @@ env:
   # varios emuladores + romm no mesmo node, so um deles conseguiria agendar).
   NVIDIA_VISIBLE_DEVICES: "all"
   NVIDIA_DRIVER_CAPABILITIES: "all"
+  # -- Docker Mod do Sunshine. Alem do fix de gamepad/resolucao padrao,
+  # esse mod tambem corrige o startwm.sh/autostart/permissao de /defaults
+  # quebrados da imagem upstream (mesmo bug ja confirmado e corrigido no
+  # eden/ppsspp - ver CHANGELOG do mod).
+  DOCKER_MODS: "ghcr.io/henriqzimer/shadps4-sunshine-mod:latest"
+  # -- Obrigatorio pro Sunshine (a imagem roda em Wayland por padrao, Sunshine so captura via Xorg/X11).
+  PIXELFLUX_WAYLAND: "false"
+  # -- Sockets Unix abstratos do X11 sao compartilhados pelo NETWORK
+  # NAMESPACE, nao pelo mount namespace do container - varios pods
+  # sunshine.hostNetwork simultaneos no mesmo node precisam de DISPLAY
+  # unico (dolphin=1, azahar=2, pcsx2=3, rpcs3=4, xemu=5, flycast=6,
+  # eden=7, ppsspp=8, shadps4=9).
+  DISPLAY: ":9"
+
+sunshine:
+  enabled: true
+  hostNetwork: true
+  privileged: true
+  # -- Porta unica por emulador (todas as outras portas do Sunshine sao
+  # offsets fixos a partir desta - ver comentario no values.yaml do chart).
+  port: 48789
+
+# -- Precisa ficar false enquanto outros emuladores com sunshine.hostNetwork
+# rodam simultaneos no mesmo node (nginx do Selkies hardcoded em 3000/3001,
+# colide entre pods) - ver comentario equivalente no azahar.yaml.
+probes:
+  enabled: false
 
 # -- Fixa no worker com a RTX 3050 (unico node com GPU no cluster).
 nodeSelector:
