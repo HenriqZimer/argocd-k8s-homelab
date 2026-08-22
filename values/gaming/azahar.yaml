@@ -47,6 +47,10 @@ env:
   DISPLAY: ":2"
   # -- Obrigatorio pro Sunshine (ver comentario no topo do arquivo).
   PIXELFLUX_WAYLAND: "false"
+  # -- Sem isso, a Web UI do Sunshine bloqueia por CSRF ao acessar por
+  # IP em vez de localhost (confirmado: "The request was blocked by CSRF
+  # protection"). O host normal (IP do node) e o Tailscale (acesso remoto).
+  SUNSHINE_CSRF_ALLOWED_ORIGINS: "https://192.168.1.122:48090,https://100.98.39.59:48090"
 
 # -- NAO desloque service.httpPort/httpsPort pra fugir da colisao com o
 # dolphin (ja tentei - ver git blame): o nginx do Selkies dentro da

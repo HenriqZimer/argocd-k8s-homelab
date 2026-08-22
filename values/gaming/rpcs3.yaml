@@ -28,6 +28,10 @@ env:
   DOCKER_MODS: "ghcr.io/henriqzimer/rpcs3-sunshine-mod:latest"
   # -- Obrigatorio pro Sunshine (a imagem roda em Wayland por padrao, Sunshine so captura via Xorg/X11).
   PIXELFLUX_WAYLAND: "false"
+  # -- Sem isso, a Web UI do Sunshine bloqueia por CSRF ao acessar por
+  # IP em vez de localhost (confirmado: "The request was blocked by CSRF
+  # protection"). O host normal (IP do node) e o Tailscale (acesso remoto).
+  SUNSHINE_CSRF_ALLOWED_ORIGINS: "https://192.168.1.122:48290,https://100.98.39.59:48290"
   # -- Sockets Unix abstratos do X11 sao compartilhados pelo NETWORK
   # NAMESPACE, nao pelo mount namespace do container - com varios pods
   # sunshine.hostNetwork simultaneos no mesmo node, todos tentando :1

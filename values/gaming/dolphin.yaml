@@ -51,6 +51,10 @@ env:
   DOCKER_MODS: "ghcr.io/loneangelfayt/dolphin-romm-integration-mod:latest|ghcr.io/henriqzimer/dolphin-sunshine-mod:latest"
   # -- Obrigatorio pro Sunshine (ver comentario no topo do arquivo).
   PIXELFLUX_WAYLAND: "false"
+  # -- Sem isso, a Web UI do Sunshine bloqueia por CSRF ao acessar por
+  # IP em vez de localhost (confirmado: "The request was blocked by CSRF
+  # protection"). O host normal (IP do node) e o Tailscale (acesso remoto).
+  SUNSHINE_CSRF_ALLOWED_ORIGINS: "https://192.168.1.122:47990,https://100.98.39.59:47990"
   # -- Precisa ser o mesmo path onde o romm monta a library (romm.persistence.library -> /romm/library).
   ROM_ROOT: "/romm/library"
   # -- Expoe a GPU NVIDIA do node pro container. O runtime "nvidia" ja e o
