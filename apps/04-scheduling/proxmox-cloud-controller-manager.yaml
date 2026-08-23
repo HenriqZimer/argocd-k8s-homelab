@@ -10,7 +10,7 @@ spec:
   sources:
     - repoURL: ghcr.io/sergelogvinov/charts
       chart: proxmox-cloud-controller-manager
-      targetRevision: "0.2.28"
+      targetRevision: "0.2.30"
       helm:
         valueFiles:
           - $values/values/scheduling/proxmox-cloud-controller-manager.yaml

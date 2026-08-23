@@ -10,7 +10,7 @@ spec:
   sources:
     - repoURL: ghcr.io/sergelogvinov/charts
       chart: karpenter-provider-proxmox
-      targetRevision: "0.4.7"
+      targetRevision: "0.4.9"
       helm:
         valueFiles:
           - $values/values/scheduling/karpenter-provider-proxmox.yaml

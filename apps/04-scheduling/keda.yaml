@@ -10,7 +10,7 @@ spec:
   sources:
     - repoURL: https://kedacore.github.io/charts
       chart: keda
-      targetRevision: "2.19.0"
+      targetRevision: "2.20.2"
       helm:
         valueFiles:
           - $values/values/scheduling/keda.yaml
