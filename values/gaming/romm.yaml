@@ -186,10 +186,12 @@ romm:
   # (server-to-server), autenticado com o mesmo STREAMING_BROKER_SECRET do
   # Secret streaming-broker-secret.
   #
-  # Revertido de volta pros deployments do cluster (dolphin/pcsx2 ja
-  # rodando no namespace gaming; xemu/eden ainda nao subiram - os charts
-  # publicados em henriqzimer.github.io/{xemu,eden}-helm-chart ainda nao
-  # resolvem, ver Application "xemu"/"eden" com sync status Unknown).
+  # Revertido de volta pros deployments do cluster, todos os 9 emuladores
+  # ja rodando no namespace gaming. Adicionado rpcs3/ppsspp/azahar/flycast/
+  # shadps4 (2026-08-23) - tinham ingress *-stream.henriqzimer.com.br
+  # funcionando mas nunca foram incluidos aqui, entao o RomM nao sabia
+  # como lanca-los. Platform slugs seguem o padrao IGDB usado pelo RomM:
+  # ps3, psp, 3ds, dc (Dreamcast), ps4 (shadPS4 emula PS4, nao PS5).
   # `host` e o hostname do Ingress (Traefik, *.henriqzimer.com.br) porque
   # precisa ser alcancavel pelo NAVEGADOR do usuario, nao pela rede interna
   # do cluster. `broker_host` e chamado direto pelo backend do romm
@@ -218,6 +220,26 @@ romm:
             host: https://eden-stream.henriqzimer.com.br
             broker_host: http://eden.gaming.svc.cluster.local:8000
             label: Eden
+          - platform: ps3
+            host: https://rpcs3-stream.henriqzimer.com.br
+            broker_host: http://rpcs3.gaming.svc.cluster.local:8000
+            label: RPCS3
+          - platform: psp
+            host: https://ppsspp-stream.henriqzimer.com.br
+            broker_host: http://ppsspp.gaming.svc.cluster.local:8000
+            label: PPSSPP
+          - platform: 3ds
+            host: https://azahar-stream.henriqzimer.com.br
+            broker_host: http://azahar.gaming.svc.cluster.local:8000
+            label: Azahar
+          - platform: dc
+            host: https://flycast-stream.henriqzimer.com.br
+            broker_host: http://flycast.gaming.svc.cluster.local:8000
+            label: Flycast
+          - platform: ps4
+            host: https://shadps4-stream.henriqzimer.com.br
+            broker_host: http://shadps4.gaming.svc.cluster.local:8000
+            label: shadPS4
 
 mariadb:
   enabled: false
