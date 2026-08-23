@@ -21,6 +21,16 @@
 # 192.168.1.150 (via /etc/hosts no seu dispositivo ou um registro local no
 # Pi-hole - 192.168.1.106).
 
+# Forca rollout restart (2026-08-23): pega o fix do system_tray = disabled
+# nos *-sunshine-mod (ghcr.io/henriqzimer) - sem isso o Sunshine destes
+# pods provavelmente estava em crash loop (SIGABRT via AT_SECURE) desde que
+# sunshine.enabled+privileged foram ligados, ja que so o cemu-sunshine-mod
+# tinha esse workaround. DOCKER_MODS reinstala do zero a cada boot do pod
+# (filesystem efemero), entao um restart sozinho ja basta pra pegar o fix -
+# nao precisa rebuildar/republicar imagem nenhuma daqui.
+podAnnotations:
+  kubectl.kubernetes.io/restartedAt: "2026-08-23T18:09:27Z"
+
 env:
   PUID: "1000"
   PGID: "1000"
@@ -41,6 +51,12 @@ env:
   ROM_ROOT: "/romm/library"
   # -- Obrigatorio pro Sunshine (a imagem roda em Wayland por padrao, Sunshine so captura via Xorg/X11).
   PIXELFLUX_WAYLAND: "false"
+  # -- Sem isso, a Web UI do Sunshine bloqueia por CSRF ao acessar por IP
+  # em vez de localhost. Aponta pro IP compartilhado do Service LoadBalancer
+  # (sunshine.service abaixo), nao pro IP do node - sem hostNetwork, o
+  # auto-detect do mod (ip route get) resolveria o IP interno do pod, que
+  # o navegador nunca usa.
+  SUNSHINE_CSRF_ALLOWED_ORIGINS: "https://192.168.1.151:48590"
   # -- Sockets Unix abstratos do X11 sao compartilhados pelo NETWORK
   # NAMESPACE, nao pelo mount namespace do container - varios pods
   # sunshine.hostNetwork simultaneos no mesmo node precisam de DISPLAY
@@ -99,17 +115,14 @@ streaming:
 
 sunshine:
   enabled: true
-  hostNetwork: true
   privileged: true
   # -- Porta unica por emulador (todas as outras portas do Sunshine sao
   # offsets fixos a partir desta - ver comentario no values.yaml do chart).
   port: 48589
-
-# -- Precisa ficar false enquanto outros emuladores com sunshine.hostNetwork
-# rodam simultaneos no mesmo node (nginx do Selkies hardcoded em 3000/3001,
-# colide entre pods) - ver comentario equivalente no azahar.yaml.
-probes:
-  enabled: false
+  service:
+    enabled: true
+    loadBalancerIP: "192.168.1.151"
+    sharedIPKey: "gaming-sunshine"
 
 ingress:
   enabled: true

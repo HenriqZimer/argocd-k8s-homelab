@@ -12,17 +12,30 @@
 # local - Pi-hole em 192.168.1.106 - apontando azahar-stream para
 # 192.168.1.160, o LoadBalancer do Traefik nesse cluster).
 #
-# Sunshine/Moonlight (2026-08-20, POC): sunshine.enabled roda o Sunshine ao
-# lado do Selkies, mesmo approach do dolphin (ver comentario la pro motivo
-# completo). Detalhes: github.com/henriqzimer/azahar-sunshine-mod
+# Sunshine/Moonlight (2026-08-20, POC; migrado de hostNetwork pra
+# LoadBalancer em 2026-08-23): sunshine.enabled roda o Sunshine ao lado do
+# Selkies. Detalhes: github.com/henriqzimer/azahar-sunshine-mod
 # - PIXELFLUX_WAYLAND=false: a imagem roda em Wayland por padrao; Sunshine
 #   so consegue capturar via Xorg (X11), nao Wayland.
-# - hostNetwork/privileged (no bloco sunshine: abaixo): Moonlight fala
-#   TCP+UDP cru (nao passa pelo Traefik) e o pod precisa da network
-#   namespace do host pros eventos de hotplug do uinput chegarem no udev
-#   dentro do container.
-# - Acesso: parear o app Moonlight direto pelo IP do node moltres (o pod
-#   fica na rede do host) - nao tem Service/Ingress pra essas portas.
+# - privileged (no bloco sunshine: abaixo): o pod precisa disso pro
+#   Sunshine's uinput hotplug chegar ate o udev do container (mouse/
+#   teclado/gamepad virtuais) - Kubernetes nao tem um knob mais fino pra
+#   device-cgroup-rule fora de privileged: true.
+# - Acesso: sunshine.service cria um Service LoadBalancer (MetalLB)
+#   dedicado, compartilhando um unico IP externo com os outros emuladores
+#   via metallb.io/allow-shared-ip (cada um com sua propria faixa de
+#   portas, ver sunshine.port abaixo) - NAO usa mais hostNetwork nem a
+#   rede do node diretamente.
+
+# Forca rollout restart (2026-08-23): pega o fix do system_tray = disabled
+# nos *-sunshine-mod (ghcr.io/henriqzimer) - sem isso o Sunshine destes
+# pods provavelmente estava em crash loop (SIGABRT via AT_SECURE) desde que
+# sunshine.enabled+privileged foram ligados, ja que so o cemu-sunshine-mod
+# tinha esse workaround. DOCKER_MODS reinstala do zero a cada boot do pod
+# (filesystem efemero), entao um restart sozinho ja basta pra pegar o fix -
+# nao precisa rebuildar/republicar imagem nenhuma daqui.
+podAnnotations:
+  kubectl.kubernetes.io/restartedAt: "2026-08-23T18:09:27Z"
 
 env:
   PUID: "1000"
@@ -38,51 +51,42 @@ env:
   NVIDIA_DRIVER_CAPABILITIES: "all"
   # -- Docker Mod do Sunshine (POC).
   DOCKER_MODS: "ghcr.io/henriqzimer/azahar-sunshine-mod:latest"
-  # -- Sockets Unix abstratos do X11 (@/tmp/.X11-unix/X1) sao compartilhados
-  # pelo NETWORK NAMESPACE, nao pelo mount namespace do container - como
-  # azahar e dolphin usam hostNetwork:true simultaneos no mesmo node, os
-  # dois tentando :1 (default da imagem) colidem ("server already
-  # running") mesmo estando em containers/filesystems totalmente
-  # separados. Desloca o azahar pra :2 pra evitar a colisao.
+  # -- Legado da epoca de hostNetwork (sockets X11 abstratos colidiam entre
+  # pods que compartilhavam a rede do node). Sem hostNetwork cada pod tem
+  # sua propria network namespace, entao isso nao e mais estritamente
+  # necessario - mantido mesmo assim, sem custo, como defesa extra.
   DISPLAY: ":2"
   # -- Obrigatorio pro Sunshine (ver comentario no topo do arquivo).
   PIXELFLUX_WAYLAND: "false"
   # -- Sem isso, a Web UI do Sunshine bloqueia por CSRF ao acessar por
   # IP em vez de localhost (confirmado: "The request was blocked by CSRF
   # protection"). O host normal (IP do node) e o Tailscale (acesso remoto).
-  SUNSHINE_CSRF_ALLOWED_ORIGINS: "https://192.168.1.122:48090,https://100.98.39.59:48090"
+  SUNSHINE_CSRF_ALLOWED_ORIGINS: "https://192.168.1.151:48090"
 
-# -- NAO desloque service.httpPort/httpsPort pra fugir da colisao com o
-# dolphin (ja tentei - ver git blame): o nginx do Selkies dentro da
+# NAO desloque service.httpPort/httpsPort: o nginx do Selkies dentro da
 # imagem esta hardcoded pra escutar em 3000/3001, ignorando esse valor -
 # so muda o Service/containerPort/probes do k8s, nunca o processo real.
-# Confirmado: com o valor customizado, a liveness/readiness probe (que
-# usa esse valor) apontava pra uma porta que o nginx nunca escuta,
-# causando crashloop. CONCLUSAO REAL: com hostNetwork, dolphin e azahar
-# NAO PODEM rodar ao mesmo tempo no mesmo node - as portas 3000/3001 do
-# Selkies sempre colidem, sem solucao via config. So um dos dois por vez
-# (ver replicaCount: 0 no values do dolphin).
+# HISTORICO (resolvido 2026-08-23): com hostNetwork, dolphin e azahar
+# disputavam o MESMO IP (unico node com GPU) e o nginx colidia direto -
+# so um dos dois conseguia bindar 3000/3001, forcando replicaCount: 0 no
+# dolphin. Migrar pra sunshine.service (LoadBalancer dedicado por pod, sem
+# hostNetwork) resolveu isso na raiz: cada pod tem sua propria network
+# namespace agora, entao o nginx nunca mais colide entre emuladores -
+# dolphin e azahar (e todos os outros) podem rodar simultaneos.
 sunshine:
   enabled: true
-  hostNetwork: true
   privileged: true
-  # -- Porta base deslocada +100 em relacao ao default do Sunshine (47989):
-  # com hostNetwork, dolphin e azahar disputam o MESMO IP (o unico node
-  # com GPU, moltres) - nas portas default colidem e um dos dois fica
-  # Pending pra sempre (confirmado: "didn't have free ports for the
-  # requested pod ports"). Todas as outras portas do Sunshine sao offsets
-  # fixos a partir desta (ver comentario no values.yaml do chart).
+  # -- Porta base unica por emulador - alem de evitar colisao no Sunshine
+  # em si, tambem precisa ser unica porque varios emuladores agora
+  # compartilham o MESMO IP externo (sunshine.service.loadBalancerIP),
+  # entao so as portas os diferenciam. Todas as outras portas do Sunshine
+  # sao offsets fixos a partir desta (ver comentario no values.yaml do
+  # chart).
   port: 48089
-
-# -- Precisa ficar false enquanto dolphin (que tambem usa sunshine.hostNetwork)
-# roda simultaneo no mesmo node: o nginx do Selkies escuta em 3000/3001
-# hardcoded (nao configuravel), entao o segundo pod nunca consegue bindar
-# essa porta - sem desligar a probe, o kubelet mata o container em
-# crashloop mesmo com o Sunshine funcionando normalmente. Tradeoff: a UI
-# web (KasmVNC) do azahar fica inacessivel enquanto os dois rodam juntos -
-# o Moonlight nao e afetado. Reverter pra true se voltar a rodar sozinho.
-probes:
-  enabled: false
+  service:
+    enabled: true
+    loadBalancerIP: "192.168.1.151"
+    sharedIPKey: "gaming-sunshine"
 
 # -- Fixa no worker com a RTX 3050 (unico node com GPU no cluster).
 nodeSelector:

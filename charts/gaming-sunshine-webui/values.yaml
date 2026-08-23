@@ -1,10 +1,12 @@
 # -- Cada entrada gera um Service (seleciona o pod pelas labels padrao do
 # chart do emulador, app.kubernetes.io/name=<name>) + uma IngressRoute
 # (CRD do Traefik, nao Ingress comum - ver comentario no template) pra
-# porta da Web UI do Sunshine (base+1, offset fixo do Sunshine). Como os
-# pods sao hostNetwork:true, o Service resolve certo pro IP do node
-# automaticamente (o "pod IP" deles E o IP do node) - nao precisa
-# hardcodar IP em lugar nenhum, mesmo se o pod trocar de node no futuro.
+# porta da Web UI do Sunshine (base+1, offset fixo do Sunshine). Segue
+# funcionando igual apos a migracao de hostNetwork pra sunshine.service
+# (LoadBalancer, 2026-08-23): o selector aponta pro pod normal (nao mais
+# pro IP do node) e o containerPort sun-web continua exposto do mesmo
+# jeito, entao o roteamento via kube-proxy funciona sem mudanca nenhuma
+# aqui - so o hostNetwork em si que deixou de ser necessario.
 emulators:
   - name: dolphin
     host: dolphin-sunshine.henriqzimer.com.br

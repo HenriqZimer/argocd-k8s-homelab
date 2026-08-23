@@ -1,12 +1,15 @@
 # Dolphin (GameCube/Wii emulator) - web KasmVNC desktop, sem database
 # proprio (nao usa um Secret "-credentials" dedicado como o romm).
 #
-# replicaCount: 0 (2026-08-20, temporario): derrubado pra liberar CPU no
-# moltres enquanto valida o azahar-sunshine-mod - com os dois emuladores
-# rodando Xorg/Selkies/Sunshine/NVENC ao mesmo tempo (mais o
-# argocd-application-controller reconciliando), o node bateu load average
-# 30+ (8 CPUs) e o kubelet ficou instavel. Reverter pra 1 quando a POC do
-# azahar estiver validada.
+# replicaCount volta a 1 (2026-08-23): estava em 0 desde 2026-08-20
+# (derrubado pra liberar CPU no moltres enquanto validava o
+# azahar-sunshine-mod - com os dois emuladores rodando Xorg/Selkies/
+# Sunshine/NVENC ao mesmo tempo, mais o argocd-application-controller
+# reconciliando, o node bateu load average 30+ em 8 CPUs e o kubelet
+# ficou instavel). POC do azahar validada e, mais importante, a causa
+# real do problema (colisao de porta do nginx do Selkies via hostNetwork
+# compartilhado, nao carga de CPU pura) foi corrigida migrando pra
+# sunshine.service (LoadBalancer) - ver bloco Sunshine/Moonlight abaixo.
 # persistence.config habilitada (PVC via nfs-slowbro) - sem isso,
 # saves/config nao sobreviveriam a um restart do pod.
 #
@@ -25,21 +28,39 @@
 # 192.168.1.150 (via /etc/hosts no seu dispositivo ou um registro local no
 # Pi-hole - 192.168.1.106).
 #
-# Sunshine/Moonlight (2026-08-20, POC): sunshine.enabled roda o Sunshine ao
-# lado do Selkies, pra testar se Moonlight tira o input lag que sobra
-# mesmo com o tuning do Selkies acima. Detalhes completos (por que precisa
-# de cada coisa) no README do mod: github.com/henriqzimer/dolphin-sunshine-mod
+# Sunshine/Moonlight (2026-08-20, POC; migrado de hostNetwork pra
+# LoadBalancer em 2026-08-23): sunshine.enabled roda o Sunshine ao lado do
+# Selkies, pra testar se Moonlight tira o input lag que sobra mesmo com o
+# tuning do Selkies acima. Detalhes completos (por que precisa de cada
+# coisa) no README do mod: github.com/henriqzimer/dolphin-sunshine-mod
 # - PIXELFLUX_WAYLAND=false: a imagem roda em Wayland por padrao: Sunshine
 #   so consegue capturar via Xvfb/Xorg (X11), nao Wayland.
-# - hostNetwork/privileged (no bloco sunshine: abaixo): Moonlight fala
-#   TCP+UDP cru (nao passa pelo Traefik) e o pod precisa da network
-#   namespace do host pros eventos de hotplug do uinput chegarem no udev
-#   dentro do container - sem isso, os dispositivos virtuais de
-#   mouse/teclado/gamepad que o Sunshine cria ficam invisiveis pro X.
-# - Acesso: parear o app Moonlight direto pelo IP do node moltres (o pod
-#   fica na rede do host) - nao tem Service/Ingress pra essas portas.
+# - privileged (no bloco sunshine: abaixo): o pod precisa disso pro
+#   Sunshine's uinput hotplug chegar ate o udev do container - sem isso,
+#   os dispositivos virtuais de mouse/teclado/gamepad que o Sunshine cria
+#   ficam invisiveis pro X. Kubernetes nao tem um knob mais fino pra
+#   device-cgroup-rule fora de privileged: true.
+# - Acesso: sunshine.service cria um Service LoadBalancer (MetalLB)
+#   dedicado, compartilhando um unico IP externo com os outros emuladores
+#   via metallb.io/allow-shared-ip (cada um com sua propria faixa de
+#   portas). NAO usa mais hostNetwork: rodar varios emuladores com
+#   hostNetwork no mesmo node fazia o nginx do Selkies (hardcoded em
+#   3000/3001) colidir entre pods - so o primeiro a subir conseguia
+#   bindar, os outros ficavam em loop "Address already in use" pra sempre
+#   (confirmado em producao, 2026-08-23). Com LoadBalancer cada pod tem
+#   sua propria network namespace, entao isso nunca mais acontece.
 
 replicaCount: 1
+
+# Forca rollout restart (2026-08-23): pega o fix do system_tray = disabled
+# nos *-sunshine-mod (ghcr.io/henriqzimer) - sem isso o Sunshine destes
+# pods provavelmente estava em crash loop (SIGABRT via AT_SECURE) desde que
+# sunshine.enabled+privileged foram ligados, ja que so o cemu-sunshine-mod
+# tinha esse workaround. DOCKER_MODS reinstala do zero a cada boot do pod
+# (filesystem efemero), entao um restart sozinho ja basta pra pegar o fix -
+# nao precisa rebuildar/republicar imagem nenhuma daqui.
+podAnnotations:
+  kubectl.kubernetes.io/restartedAt: "2026-08-23T18:09:27Z"
 
 env:
   PUID: "1000"
@@ -54,7 +75,7 @@ env:
   # -- Sem isso, a Web UI do Sunshine bloqueia por CSRF ao acessar por
   # IP em vez de localhost (confirmado: "The request was blocked by CSRF
   # protection"). O host normal (IP do node) e o Tailscale (acesso remoto).
-  SUNSHINE_CSRF_ALLOWED_ORIGINS: "https://192.168.1.122:47990,https://100.98.39.59:47990"
+  SUNSHINE_CSRF_ALLOWED_ORIGINS: "https://192.168.1.151:47990"
   # -- Precisa ser o mesmo path onde o romm monta a library (romm.persistence.library -> /romm/library).
   ROM_ROOT: "/romm/library"
   # -- Expoe a GPU NVIDIA do node pro container. O runtime "nvidia" ja e o
@@ -101,8 +122,17 @@ streaming:
 
 sunshine:
   enabled: true
-  hostNetwork: true
   privileged: true
+  # -- Porta unica por emulador (todas as outras portas do Sunshine sao
+  # offsets fixos a partir desta - ver comentario no values.yaml do chart).
+  # Precisa ser explicita agora que compartilha um unico IP de LoadBalancer
+  # com os outros emuladores (service abaixo) - o default do chart
+  # (48189) colide com o do pcsx2.
+  port: 47989
+  service:
+    enabled: true
+    loadBalancerIP: "192.168.1.151"
+    sharedIPKey: "gaming-sunshine"
 
 ingress:
   enabled: true
