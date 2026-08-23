@@ -972,15 +972,20 @@ controller:
 
   # -- [Node selector]
   # @default -- `{}` (defaults to global.nodeSelector)
-  # Fixado no moltres (2026-08-20): zapdos (onde o controller rodava por
-  # default) so tem ~3.5Gi de RAM alocavel, insuficiente pra reconciliar
-  # as ~45 Applications deste homelab de uma vez - confirmado via dmesg do
-  # node (runtime.OOMController matando repetidamente o processo do
-  # controller e outros pods no mesmo node havia 2h+, travando qualquer
-  # sync no cluster). moltres tem ~32Gi alocavel (e ja e o node com a GPU,
-  # roda a carga mais pesada do cluster de qualquer forma).
+  # Movido de volta pro zapdos (2026-08-23): o pin original no moltres
+  # (2026-08-20) foi pra fugir de um OOM - na epoca zapdos so tinha ~3.5Gi
+  # alocavel, insuficiente pra reconciliar as ~45 Applications deste
+  # homelab de uma vez (confirmado via dmesg: runtime.OOMController matando
+  # o controller repetidamente). zapdos ja foi bumpado pra 8Gi desde entao,
+  # resolvendo aquele problema original - mas o moltres (GPU, roda varios
+  # emuladores com Sunshine/streaming ativo) tem CPU cronicamente
+  # sobrecarregado (load average ~25 num node de 8 cores), e o controller
+  # competindo por CPU la estava causando restart loop nos pods de
+  # emulador (probes de boot lento sendo mortas no meio). zapdos com 8Gi
+  # nao tem esse tipo de carga de CPU, e' um lugar mais estavel pro
+  # controller agora.
   nodeSelector:
-    kubernetes.io/hostname: moltres
+    kubernetes.io/hostname: zapdos
 
   # -- [Tolerations] for use with node taints
   # @default -- `[]` (defaults to global.tolerations)
