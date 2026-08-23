@@ -176,8 +176,12 @@ resources:
   # um pouco mais de CPU/RAM garantidos (cgroup shares) pra nao sofrer
   # throttling quando outro pod no mesmo node (moltres) tambem estiver sob
   # carga. O node tem folga de sobra - ver `kubectl top node moltres`.
+  # -- CPU reduzido de 500m para 250m (2026-08-23): pos-throttling incident
+  # no moltres, request agregado dos 9 emuladores estava alto demais -
+  # 250m ja garante cgroup shares suficientes, o limit de 6 CPU (medido,
+  # ver abaixo) continua intacto pra permitir burst real durante gameplay.
   requests:
-    cpu: 500m
+    cpu: 250m
     memory: 512Mi
   # -- Limite subido de 2 CPU/4Gi para 3 CPU/8Gi (2026-08-18): pod estava
   # sendo OOMKilled (exit 137) ao carregar um jogo (Switch emula shader

@@ -145,8 +145,11 @@ resources:
   # um pouco mais de CPU/RAM garantidos (cgroup shares) pra nao sofrer
   # throttling quando outro pod no mesmo node (moltres) tambem estiver sob
   # carga. O node tem folga de sobra - ver `kubectl top node moltres`.
+  # -- CPU reduzido de 500m para 250m (2026-08-23): pos-throttling incident
+  # no moltres, request agregado dos 9 emuladores estava alto demais -
+  # 250m ja garante cgroup shares suficientes, burst continua via limits.
   requests:
-    cpu: 500m
+    cpu: 250m
     memory: 512Mi
   # -- Limite subido de 2 CPU/4Gi para 4 CPU/6Gi (2026-08-18): folga extra
   # pro streaming full-frame - node tem sobra pra isso.

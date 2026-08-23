@@ -103,8 +103,11 @@ resources:
   # -- Requests subidos de 100m/256Mi para 300m/384Mi (2026-08-20): Dreamcast
   # e um sistema leve, limits ficam como estao - so uma reserva minima
   # melhor de CPU/RAM garantidos, node (moltres) tem folga de sobra.
+  # -- CPU reduzido de 300m para 150m (2026-08-23): pos-throttling incident
+  # no moltres, request agregado dos 9 emuladores estava alto demais -
+  # Dreamcast e leve, 150m ja garante cgroup shares suficientes.
   requests:
-    cpu: 300m
+    cpu: 150m
     memory: 384Mi
   limits:
     cpu: "1"

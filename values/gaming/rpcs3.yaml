@@ -106,8 +106,11 @@ resources:
   # pro PSP/Dreamcast/3DS. Node (moltres) tem folga de sobra pra isso -
   # mesmo padrao ja aplicado nos 4 emuladores com streaming (ver commit
   # a39112c).
+  # -- CPU reduzido de 500m para 250m (2026-08-23): pos-throttling incident
+  # no moltres, request agregado dos 9 emuladores estava alto demais -
+  # 250m ja garante cgroup shares suficientes, burst continua via limits.
   requests:
-    cpu: 500m
+    cpu: 250m
     memory: 1Gi
   limits:
     cpu: "2"
