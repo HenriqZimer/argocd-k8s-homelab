@@ -228,6 +228,29 @@ customResources:
           templatesRef:
             name: talos-worker-config
             namespace: kube-system
+        # -- Agrupa as VMs provisionadas pelo Karpenter num pool dedicado do
+        # Proxmox (visibilidade/quota separada das VMs estaticas do Terraform).
+        # O pool precisa existir no Proxmox ANTES de habilitar isto, senao o
+        # clone da VM falha: crie com
+        #   pvesh create /pools --poolid karpenter
+        # (ou Datacenter > Permissions > Pools na UI), depois descomente:
+        # resourcePool: karpenter
+        #
+        # -- Aplica um Security Group do firewall do Proxmox as VMs
+        # provisionadas. Tambem precisa existir antes (Datacenter > Firewall >
+        # Security Groups), senao o clone falha. Descomente depois de criar:
+        # securityGroups:
+        #   - name: k8s-worker
+        #     interface: net0
+        #
+        # -- cpuManagerPolicy static: da cores exclusivos a pods Guaranteed com
+        # limits.cpu inteiro (ex: cargas de GPU/emulacao). Deixado desligado por
+        # padrao porque muda o comportamento de scheduling pra TODOS os pods
+        # Guaranteed nos workers do Karpenter, nao so os que precisam disso -
+        # habilitar so se identificar contencao real de CPU num workload
+        # especifico.
+        # kubeletConfiguration:
+        #   cpuManagerPolicy: static
 
   nodePools:
     proxmox:
@@ -258,8 +281,18 @@ customResources:
               kind: ProxmoxNodeClass
               name: proxmox
         disruption:
-          consolidationPolicy: WhenEmpty
+          # WhenEmptyOrUnderutilized (em vez de WhenEmpty): permite ao Karpenter
+          # compactar pods em menos VMs quando um node fica subutilizado, nao so
+          # quando fica totalmente vazio. Importante aqui porque o teto real e a
+          # capacidade fisica do host Proxmox (arceus), nao uma conta cloud com
+          # custo marginal por node ligado.
+          consolidationPolicy: WhenEmptyOrUnderutilized
           consolidateAfter: 30s
+          # Budget absoluto (nao percentual): o default do Karpenter e "10%",
+          # que arredonda pra 0 num pool pequeno de homelab e trava a
+          # consolidacao/expiracao automatica silenciosamente.
+          budgets:
+            - nodes: "1"
 
   nodeTemplate:
     talos-k8s-template:
