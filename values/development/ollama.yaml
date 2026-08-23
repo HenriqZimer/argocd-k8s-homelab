@@ -2,6 +2,11 @@ image:
   repository: ollama/ollama
   pullPolicy: IfNotPresent
 
+# Temporariamente 0 pra liberar a unica GPU do cluster (moltres) pro teste
+# do cemu-helm-chart (Wii U via Vulkan software/llvmpipe e impraticavel).
+# Reverter (voltar pra 1, ou remover essa linha) quando o teste terminar.
+replicaCount: 0
+
 # GPU passthrough: so o worker "moltres" tem a RTX 3050 (ver worker_gpu_pci_ids
 # no terraform-homelab), e o runtime "nvidia" ja e o default do containerd
 # nesse node - nao precisa de runtimeClassName por pod.
