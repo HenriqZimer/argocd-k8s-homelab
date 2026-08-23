@@ -10,7 +10,7 @@ spec:
   sources:
     - repoURL: https://henriqzimer.github.io/eden-helm-chart
       chart: eden
-      targetRevision: "1.4.1"
+      targetRevision: "1.4.2"
       helm:
         valueFiles:
           - $values/values/gaming/eden.yaml
