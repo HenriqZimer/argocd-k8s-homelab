@@ -27,11 +27,15 @@ env:
   TZ: "America/Sao_Paulo"
   TITLE: "Eden"
   # -- Docker Mods: broker de streaming do RomM + Sunshine/Moonlight.
-  # AVISO: a imagem do Eden tem o modo X11 quebrado upstream (autostart
-  # corrompido/hardcoded pra "platform not supported") - o mod recebeu so
-  # o fix de permissao do uhid, sem o wrapper LD_PRELOAD que os outros 6
-  # emuladores tem. O controle pode nao responder DENTRO do Eden mesmo
-  # com Sunshine funcionando (mouse/teclado devem funcionar normal).
+  # A imagem do Eden tinha o modo X11 quebrado upstream (startwm.sh/
+  # autostart hardcoded/corrompido, so mostrava um popup falso "platform
+  # not supported" sem checagem real - AVX2 esta presente, confirmado via
+  # /proc/cpuinfo) - corrigido no mod (root/defaults/), mesmo padrao do
+  # ppsspp/shadps4-sunshine-mod. Wrapper LD_PRELOAD tambem presente (mesmo
+  # fix de gamepad dos outros 8 emuladores). Idle-freeze (SIGSTOP) NAO
+  # esta habilitado pro Eden: confirmado que quebra a supervisao ptrace do
+  # sudo usado pra lancar o Eden via broker (processo vira zumbi ao
+  # receber SIGCONT) - ver commit do eden-sunshine-mod.
   DOCKER_MODS: "ghcr.io/loneangelfayt/eden-romm-integration-mod:latest|ghcr.io/henriqzimer/eden-sunshine-mod:latest"
   # -- Precisa ser o mesmo path onde o romm monta a library (romm.persistence.library -> /romm/library).
   ROM_ROOT: "/romm/library"
@@ -168,6 +172,14 @@ resources:
   # outros emuladores 2D/PS1-era deste values/gaming/). CPU subido de novo
   # pra 4 (2026-08-18) - JIT do Eden e single-thread-heavy, folga de sobra
   # no node pra isso.
+  #
+  # Subido de novo pra 6 CPU/12Gi (2026-08-22): confirmado ao vivo que o
+  # pod ficava colado no teto de 4 CPU (3.5-3.9 de uso real) durante
+  # gameplay ativo, exatamente o padrao de cgroup throttling que causa
+  # stutter/fps inconsistente - o node tem 8 CPU no total e so tinha ~1.4-
+  # 1.8 CPU alocado pro resto quando isso foi medido, entao havia folga
+  # real pra dar mais. RAM tambem chegando perto do teto (~7.3-7.4Gi de
+  # 8Gi) - subido junto por seguranca (node tem 32Gi, folga de sobra).
   limits:
-    cpu: "4"
-    memory: 8Gi
+    cpu: "6"
+    memory: 12Gi
