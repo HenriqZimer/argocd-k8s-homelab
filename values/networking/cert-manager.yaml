@@ -653,13 +653,10 @@ prometheus:
     # different ServiceMonitors.
     prometheusInstance: default
 
-    # The target port to set on the ServiceMonitor. This must match the port that the
-    # cert-manager controller is listening on for metrics.
-    # +docs:type=string,integer
-    targetPort: http-metrics
-
-    # The path to scrape for metrics.
-    path: /metrics
+    # targetPort/path removidos aqui: no chart >=1.21 sao fixos internamente
+    # no template (http-metrics / /metrics, os mesmos valores que ja
+    # estavamos setando) e pararam de ser aceitos em values.yaml - deixar
+    # esses dois campos aqui agora quebra a validacao do values.schema.json.
 
     # The interval to scrape metrics.
     interval: 60s
@@ -709,8 +706,8 @@ prometheus:
     # different PodMonitors.
     prometheusInstance: default
 
-    # The path to scrape for metrics.
-    path: /metrics
+    # path removido aqui pelo mesmo motivo do servicemonitor acima (fixo em
+    # /metrics no template do chart >=1.21, values.yaml nao aceita mais).
 
     # The interval to scrape metrics.
     interval: 60s
