@@ -10,7 +10,7 @@ spec:
   sources:
     - repoURL: https://henriqzimer.github.io/romm-helm-chart
       chart: romm
-      targetRevision: "1.3.0"
+      targetRevision: "1.5.5"
       helm:
         valueFiles:
           - $values/values/gaming/romm.yaml
