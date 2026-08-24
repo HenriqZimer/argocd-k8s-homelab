@@ -117,8 +117,8 @@ resources:
     cpu: 150m
     memory: 384Mi
   limits:
-    cpu: "1"
-    memory: 4Gi
+    cpu: "4"
+    memory: 8Gi
 
 # -- Desliga probes.enabled (default true no chart): o idle-monitor
 # (SIGSTOP no processo do emulador apos 90s sem cliente Moonlight, ver

@@ -215,5 +215,5 @@ resources:
   # real pra dar mais. RAM tambem chegando perto do teto (~7.3-7.4Gi de
   # 8Gi) - subido junto por seguranca (node tem 32Gi, folga de sobra).
   limits:
-    cpu: "6"
-    memory: 12Gi
+    cpu: "4"
+    memory: 8Gi

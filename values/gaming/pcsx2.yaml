@@ -179,5 +179,5 @@ resources:
   # -- Memoria subida de 6Gi para 8Gi (2026-08-18): folga extra pro shm de
   # 4Gi (acima) + o proprio PCSX2, com sobra no node pra isso.
   limits:
-    cpu: "1.5"
+    cpu: "4"
     memory: 8Gi

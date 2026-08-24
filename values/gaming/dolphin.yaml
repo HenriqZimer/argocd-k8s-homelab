@@ -184,5 +184,5 @@ resources:
   # ubershaders/compilacao de shader e streaming full-frame pode encostar
   # no teto antigo - node tem folga de sobra pra isso.
   limits:
-    cpu: "2"
-    memory: 6Gi
+    cpu: "4"
+    memory: 8Gi

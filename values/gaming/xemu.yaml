@@ -161,5 +161,5 @@ resources:
   # -- Limite subido de 2 CPU/4Gi para 4 CPU/6Gi (2026-08-18): folga extra
   # pro streaming full-frame - node tem sobra pra isso.
   limits:
-    cpu: "2"
-    memory: 6Gi
+    cpu: "4"
+    memory: 8Gi
