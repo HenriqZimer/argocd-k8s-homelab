@@ -313,6 +313,12 @@ speaker:
     - key: node-role.kubernetes.io/master
       operator: Exists
       effect: NoSchedule
+    # -- Sem isso, o taint nvidia.com/gpu no moltres (ver
+    # kubernetes-labels.tf) tiraria o speaker do unico node com GPU,
+    # perdendo a rota L2 dele pros LoadBalancers dos emuladores.
+    - key: nvidia.com/gpu
+      value: present
+      effect: NoSchedule
   priorityClassName: ""
   affinity: {}
   ## Selects which runtime class will be used by the pod.

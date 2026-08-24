@@ -23,6 +23,13 @@ ollama:
 nodeSelector:
   nvidia.com/gpu.present: "true"
 
+# -- Tolera o taint aplicado no moltres (ver kubernetes-labels.tf) que
+# mantem apps genericos fora do worker com GPU.
+tolerations:
+  - key: nvidia.com/gpu
+    value: present
+    effect: NoSchedule
+
 resources:
   requests:
     cpu: 1000m

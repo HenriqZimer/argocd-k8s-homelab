@@ -24,3 +24,16 @@ resources:
     memory: 1024Mi
 
 tty: false
+
+# -- Default do chart so tolera control-plane/master - sem isso, o taint
+# nvidia.com/gpu no moltres (ver kubernetes-labels.tf) tiraria esse
+# DaemonSet do unico node com GPU, perdendo a cobertura de seguranca dele.
+# Preserva as duas entradas default do chart e soma a nova.
+tolerations:
+  - key: node-role.kubernetes.io/master
+    effect: NoSchedule
+  - key: node-role.kubernetes.io/control-plane
+    effect: NoSchedule
+  - key: nvidia.com/gpu
+    value: present
+    effect: NoSchedule

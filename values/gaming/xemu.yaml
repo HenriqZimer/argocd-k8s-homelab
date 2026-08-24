@@ -102,6 +102,13 @@ sunshine:
 nodeSelector:
   nvidia.com/gpu.present: "true"
 
+# -- Tolera o taint aplicado no moltres (ver kubernetes-labels.tf) que
+# mantem apps genericos fora do worker com GPU.
+tolerations:
+  - key: nvidia.com/gpu
+    value: present
+    effect: NoSchedule
+
 # -- Subido de 2Gi (default do chart) pra 4Gi (2026-08-18): shm memory-backed,
 # usado como buffer de captura de tela do Selkies em full-frame streaming
 # mode. Cabe dentro do limite de memoria do pod (6Gi) com folga.

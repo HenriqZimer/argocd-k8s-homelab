@@ -3049,13 +3049,17 @@ repoServer:
   podLabels: {}
 
   # -- Resource limits and requests for the repo server pods
-  resources: {}
-  #  limits:
-  #    cpu: 50m
-  #    memory: 128Mi
-  #  requests:
-  #    cpu: 10m
-  #    memory: 64Mi
+  # -- Sem isso o pod fica QoS BestEffort e e' o primeiro a sofrer CPU
+  # throttling sob contencao (ex: moltres rodando Ollama/emuladores), o que
+  # faz o healthz (timeoutSeconds: 1 abaixo) estourar e o kubelet matar o
+  # container em CrashLoopBackOff mesmo com o processo saudavel (confirmado
+  # em producao, 2026-08-24).
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      memory: 512Mi
 
   # Repo server container ports
   containerPorts:
@@ -3097,8 +3101,10 @@ repoServer:
     periodSeconds: 10
     # -- Minimum consecutive successes for the [probe] to be considered successful after having failed
     successThreshold: 1
-    # -- Number of seconds after which the [probe] times out
-    timeoutSeconds: 1
+    # -- Default do chart e' 1s, curto demais pro endpoint ?full=true sob
+    # qualquer contencao momentanea de CPU no node - ver comentario em
+    # resources acima (mesmo incidente).
+    timeoutSeconds: 5
 
   livenessProbe:
     # -- Enable Kubernetes liveness probe for Repo Server
@@ -3111,8 +3117,10 @@ repoServer:
     periodSeconds: 10
     # -- Minimum consecutive successes for the [probe] to be considered successful after having failed
     successThreshold: 1
-    # -- Number of seconds after which the [probe] times out
-    timeoutSeconds: 1
+    # -- Default do chart e' 1s, curto demais pro endpoint ?full=true sob
+    # qualquer contencao momentanea de CPU no node - ver comentario em
+    # resources acima (mesmo incidente).
+    timeoutSeconds: 5
 
   # -- terminationGracePeriodSeconds for container lifecycle hook
   terminationGracePeriodSeconds: 30

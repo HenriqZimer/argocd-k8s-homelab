@@ -102,6 +102,13 @@ sunshine:
 nodeSelector:
   nvidia.com/gpu.present: "true"
 
+# -- Tolera o taint aplicado no moltres (ver kubernetes-labels.tf) que
+# mantem apps genericos fora do worker com GPU.
+tolerations:
+  - key: nvidia.com/gpu
+    value: present
+    effect: NoSchedule
+
 # -- Subido de 2Gi (default do chart) pra 4Gi (2026-08-18): shm memory-backed,
 # usado pelo mmap "fastmem" do JIT (ver o comentario de shmSize la em cima
 # sobre o SIGBUS ja visto no EE recompiler) e como buffer de captura de
