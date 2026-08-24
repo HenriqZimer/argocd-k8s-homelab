@@ -46,8 +46,17 @@ env:
   # esta habilitado pro Eden: confirmado que quebra a supervisao ptrace do
   # sudo usado pra lancar o Eden via broker (processo vira zumbi ao
   # receber SIGCONT) - ver commit do eden-sunshine-mod.
-  # DOCKER_MODS: "ghcr.io/loneangelfayt/eden-romm-integration-mod:latest|ghcr.io/henriqzimer/eden-sunshine-mod:latest"
-  DOCKER_MODS: "ghcr.io/henriqzimer/eden-sunshine-mod:latest"
+  # -- Precisava ficar so no sunshine-mod pra nao confundir com o bug do
+  # idle-freeze (ver comentario acima) - mas a causa real do crashloop era
+  # outra: o svc-broker que o eden-sunshine-mod declara (dependencies.d/
+  # svc-xorg) fica incompleto sem esse mod, faltando os arquivos run/type
+  # que so o eden-romm-integration-mod fornece (confirmado inspecionando a
+  # imagem: etc/s6-overlay/s6-rc.d/svc-broker/{run,type,finish}) - sem
+  # eles o s6-rc-compile falha no boot inteiro do container (confirmado em
+  # producao, 2026-08-24). Ordem importa: romm-integration-mod primeiro
+  # (cria run/type/finish), eden-sunshine-mod depois (so soma a
+  # dependencia extra svc-xorg por cima, sem sobrescrever os arquivos).
+  DOCKER_MODS: "ghcr.io/loneangelfayt/eden-romm-integration-mod:latest|ghcr.io/henriqzimer/eden-sunshine-mod:latest"
   # -- Precisa ser o mesmo path onde o romm monta a library (romm.persistence.library -> /romm/library).
   ROM_ROOT: "/romm/library"
   # -- Obrigatorio pro Sunshine (a imagem roda em Wayland por padrao, Sunshine so captura via Xorg/X11).
