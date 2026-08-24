@@ -122,3 +122,15 @@ resources:
   limits:
     cpu: "2"
     memory: 8Gi
+
+# -- Desliga probes.enabled (default true no chart): o idle-monitor
+# (SIGSTOP no processo do emulador apos 90s sem cliente Moonlight, ver
+# svc-*-idle-monitor no mod) congela mais do que so o processo do jogo -
+# a porta 3000 do Selkies para de responder junto nesse emulador
+# especifico (nao acontece em todos - ver azahar/dolphin/pcsx2/ppsspp/
+# xemu, onde o Selkies continua respondendo mesmo com o emulador
+# congelado). Sem desligar a probe, o kubelet mata o container em
+# crashloop a cada ciclo de freeze, destruindo justamente o estado que o
+# SIGSTOP existe pra preservar (confirmado em producao, 2026-08-24).
+probes:
+  enabled: false
