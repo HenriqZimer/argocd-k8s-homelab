@@ -46,7 +46,8 @@ env:
   # esta habilitado pro Eden: confirmado que quebra a supervisao ptrace do
   # sudo usado pra lancar o Eden via broker (processo vira zumbi ao
   # receber SIGCONT) - ver commit do eden-sunshine-mod.
-  DOCKER_MODS: "ghcr.io/loneangelfayt/eden-romm-integration-mod:latest|ghcr.io/henriqzimer/eden-sunshine-mod:latest"
+  # DOCKER_MODS: "ghcr.io/loneangelfayt/eden-romm-integration-mod:latest|ghcr.io/henriqzimer/eden-sunshine-mod:latest"
+  DOCKER_MODS: "ghcr.io/henriqzimer/eden-sunshine-mod:latest"
   # -- Precisa ser o mesmo path onde o romm monta a library (romm.persistence.library -> /romm/library).
   ROM_ROOT: "/romm/library"
   # -- Obrigatorio pro Sunshine (a imagem roda em Wayland por padrao, Sunshine so captura via Xorg/X11).
