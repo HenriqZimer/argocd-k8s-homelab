@@ -2627,10 +2627,19 @@ kube-state-metrics:
         ## Keep labels from scraped data, overriding server-side labels
         honorLabels: true
 
+  # createClusterRoleRules só libera list/watch em customresourcedefinitions
+  # (genérico); o CRD específico usado no customResourceState abaixo precisa
+  # da regra manual aqui, senão o kube-state-metrics não consegue ler os
+  # VulnerabilityReport e a métrica fica sempre vazia.
+  rbac:
+    extraRules:
+      - apiGroups: ["aquasecurity.github.io"]
+        resources: ["vulnerabilityreports"]
+        verbs: ["list", "watch"]
+
   # Expõe uma série por CVE do trivy-operator (id, título, severidade, versão
   # corrigida, link) como métrica, para dar detalhe por vulnerabilidade no
-  # Grafana sem precisar de um datasource novo. RBAC do ClusterRole é
-  # adicionada automaticamente pelo chart a partir dos resources abaixo.
+  # Grafana sem precisar de um datasource novo.
   customResourceState:
     enabled: true
     config:
