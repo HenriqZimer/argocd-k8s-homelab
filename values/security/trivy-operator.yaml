@@ -9,3 +9,6 @@ operator:
 
 serviceMonitor:
   enabled: true
+  # Necessário para o Prometheus do kube-prometheus-stack descobrir este ServiceMonitor.
+  labels:
+    release: kube-prometheus-stack
