@@ -2627,6 +2627,39 @@ kube-state-metrics:
         ## Keep labels from scraped data, overriding server-side labels
         honorLabels: true
 
+  # Expõe uma série por CVE do trivy-operator (id, título, severidade, versão
+  # corrigida, link) como métrica, para dar detalhe por vulnerabilidade no
+  # Grafana sem precisar de um datasource novo. RBAC do ClusterRole é
+  # adicionada automaticamente pelo chart a partir dos resources abaixo.
+  customResourceState:
+    enabled: true
+    config:
+      kind: CustomResourceStateMetrics
+      spec:
+        resources:
+          - groupVersionKind:
+              group: aquasecurity.github.io
+              version: v1alpha1
+              kind: VulnerabilityReport
+            labelsFromPath:
+              report_name: [metadata, name]
+              report_namespace: [metadata, namespace]
+            metrics:
+              - name: "vulnerabilityreport_vulnerability"
+                help: "Detalhe de cada CVE encontrada pelo Trivy (info metric, valor sempre 1)"
+                each:
+                  type: Info
+                  info:
+                    path: [report, vulnerabilities]
+                    labelsFromPath:
+                      vulnerability_id: [vulnerabilityID]
+                      severity: [severity]
+                      title: [title]
+                      installed_version: [installedVersion]
+                      fixed_version: [fixedVersion]
+                      resource: [resource]
+                      primary_link: [primaryLink]
+
 ## Deploy node exporter as a daemonset to all nodes
 ##
 nodeExporter:
