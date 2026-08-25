@@ -14,6 +14,28 @@ data:
       "schemaVersion": 39,
       "time": { "from": "now-6h", "to": "now" },
       "refresh": "5m",
+      "templating": {
+        "list": [
+          {
+            "name": "namespace",
+            "type": "query",
+            "datasource": { "type": "prometheus", "uid": "prometheus" },
+            "query": { "query": "label_values(kube_customresource_vulnerabilityreport_vulnerability_info, report_namespace)", "refId": "namespace" },
+            "refresh": 2,
+            "includeAll": true,
+            "multi": true,
+            "current": { "text": ["All"], "value": ["$__all"] }
+          },
+          {
+            "name": "severity",
+            "type": "custom",
+            "query": "CRITICAL,HIGH,MEDIUM,LOW,UNKNOWN",
+            "includeAll": true,
+            "multi": true,
+            "current": { "text": ["CRITICAL", "HIGH"], "value": ["CRITICAL", "HIGH"] }
+          }
+        ]
+      },
       "panels": [
         {
           "id": 1,
@@ -119,6 +141,104 @@ data:
             { "expr": "sum(trivy_image_vulnerabilities{severity=\"High\"}) by (namespace, resource_kind, resource_name, container_name, image_repository, image_tag)", "format": "table", "instant": true, "refId": "B" },
             { "expr": "sum(trivy_image_vulnerabilities{severity=\"Medium\"}) by (namespace, resource_kind, resource_name, container_name, image_repository, image_tag)", "format": "table", "instant": true, "refId": "C" },
             { "expr": "sum(trivy_image_vulnerabilities{severity=\"Low\"}) by (namespace, resource_kind, resource_name, container_name, image_repository, image_tag)", "format": "table", "instant": true, "refId": "D" }
+          ]
+        },
+        {
+          "id": 7,
+          "type": "row",
+          "title": "Detalhe por CVE (filtre por namespace/severidade acima)",
+          "gridPos": { "h": 1, "w": 24, "x": 0, "y": 25 }
+        },
+        {
+          "id": 8,
+          "type": "table",
+          "title": "CVEs mais recorrentes (priorize por aqui: quantas imagens afeta)",
+          "description": "Conta em quantos workloads distintos cada CVE aparece. Uma CVE que afeta 10 resources geralmente indica uma imagem base compartilhada desatualizada.",
+          "gridPos": { "h": 10, "w": 24, "x": 0, "y": 26 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "fieldConfig": {
+            "defaults": {
+              "custom": { "align": "left" },
+              "links": [
+                {
+                  "title": "Ver CVE",
+                  "url": "${__data.fields.Link}",
+                  "targetBlank": true
+                }
+              ]
+            },
+            "overrides": [
+              { "matcher": { "id": "byName", "options": "Severidade" }, "properties": [{ "id": "mappings", "value": [
+                { "type": "value", "options": { "CRITICAL": { "color": "red", "index": 0 } } },
+                { "type": "value", "options": { "HIGH": { "color": "orange", "index": 1 } } },
+                { "type": "value", "options": { "MEDIUM": { "color": "yellow", "index": 2 } } },
+                { "type": "value", "options": { "LOW": { "color": "blue", "index": 3 } } }
+              ] }, { "id": "custom.cellOptions", "value": { "type": "color-background" } }] }
+            ]
+          },
+          "transformations": [
+            {
+              "id": "organize",
+              "options": {
+                "excludeByName": { "Time": true, "__name__": true },
+                "renameByName": {
+                  "vulnerability_id": "CVE",
+                  "title": "Título",
+                  "severity": "Severidade",
+                  "score": "Score",
+                  "fixed_version": "Corrige em",
+                  "primary_link": "Link",
+                  "Value": "Nº de workloads afetados"
+                }
+              }
+            },
+            { "id": "sortBy", "options": { "sort": [{ "field": "Nº de workloads afetados", "desc": true }] } }
+          ],
+          "targets": [
+            {
+              "expr": "count(kube_customresource_vulnerabilityreport_vulnerability_info{report_namespace=~\"$namespace\", severity=~\"$severity\"}) by (vulnerability_id, title, severity, score, fixed_version, primary_link)",
+              "format": "table",
+              "instant": true,
+              "refId": "A"
+            }
+          ]
+        },
+        {
+          "id": 9,
+          "type": "table",
+          "title": "Lista completa de vulnerabilidades por workload",
+          "gridPos": { "h": 14, "w": 24, "x": 0, "y": 36 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "fieldConfig": { "defaults": { "custom": { "align": "left" } }, "overrides": [] },
+          "transformations": [
+            {
+              "id": "organize",
+              "options": {
+                "excludeByName": { "Time": true, "Value": true, "__name__": true, "customresource_group": true, "customresource_kind": true, "customresource_version": true, "report_name": true },
+                "renameByName": {
+                  "report_namespace": "Namespace",
+                  "workload_kind": "Kind",
+                  "workload_name": "Workload",
+                  "container_name": "Container",
+                  "vulnerability_id": "CVE",
+                  "severity": "Severidade",
+                  "score": "Score",
+                  "resource": "Pacote",
+                  "installed_version": "Instalada",
+                  "fixed_version": "Corrige em",
+                  "primary_link": "Link"
+                }
+              }
+            },
+            { "id": "sortBy", "options": { "sort": [{ "field": "Severidade" }] } }
+          ],
+          "targets": [
+            {
+              "expr": "kube_customresource_vulnerabilityreport_vulnerability_info{report_namespace=~\"$namespace\", severity=~\"$severity\"}",
+              "format": "table",
+              "instant": true,
+              "refId": "A"
+            }
           ]
         }
       ]

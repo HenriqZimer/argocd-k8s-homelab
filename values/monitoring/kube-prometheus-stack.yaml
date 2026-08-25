@@ -2653,8 +2653,11 @@ kube-state-metrics:
             labelsFromPath:
               report_name: [metadata, name]
               report_namespace: [metadata, namespace]
+              workload_kind: [metadata, labels, "trivy-operator.resource.kind"]
+              workload_name: [metadata, labels, "trivy-operator.resource.name"]
+              container_name: [metadata, labels, "trivy-operator.container.name"]
             metrics:
-              - name: "vulnerabilityreport_vulnerability"
+              - name: "vulnerabilityreport_vulnerability_info"
                 help: "Detalhe de cada CVE encontrada pelo Trivy (info metric, valor sempre 1)"
                 each:
                   type: Info
@@ -2668,6 +2671,7 @@ kube-state-metrics:
                       fixed_version: [fixedVersion]
                       resource: [resource]
                       primary_link: [primaryLink]
+                      score: [score]
 
 ## Deploy node exporter as a daemonset to all nodes
 ##
