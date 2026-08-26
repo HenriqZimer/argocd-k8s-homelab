@@ -1,0 +1,28 @@
+# DefectDojo: plataforma de gestão de vulnerabilidades. Importa os relatórios
+# JSON do Trivy (via API/CLI) pra dar triagem, dedupe, histórico e export -
+# complementa o dashboard do Grafana (que é só leitura/visão geral).
+host: defectdojo.henriqzimer.com.br
+siteUrl: "http://defectdojo.henriqzimer.com.br"
+
+# Sem esses três o helm não gera as senhas/segredos internos (postgres,
+# valkey, admin, secret key) e o chart quebra no primeiro install. São jobs
+# pre-install com resource-policy=keep, então rodam uma única vez e não são
+# recriados/apagados pelos syncs seguintes do ArgoCD.
+createSecret: true
+createPostgresqlSecret: true
+createValkeySecret: true
+
+django:
+  ingress:
+    enabled: true
+    ingressClassName: traefik
+    # Mesmo padrão do portainer/headlamp: sem TLS na borda (uso interno via LAN).
+    activateTLS: false
+
+# Postgres e Valkey (fork do Redis) embutidos no próprio chart - homelab
+# não precisa de instância externa dedicada pra isso.
+postgresql:
+  enabled: true
+
+valkey:
+  enabled: true
