@@ -41,6 +41,7 @@ spec:
     - https://vmware-tanzu.github.io/helm-charts
     - https://charts.min.io
     - https://charts.fairwinds.com/stable
+    - https://raw.githubusercontent.com/DefectDojo/django-DefectDojo/helm-charts
   destinations:
     - namespace: "*"
       server: https://kubernetes.default.svc
