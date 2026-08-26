@@ -10,7 +10,7 @@ spec:
   sources:
     - repoURL: https://henriqzimer.github.io/shadps4-helm-chart
       chart: shadps4
-      targetRevision: "1.3.3"
+      targetRevision: "1.3.4"
       helm:
         valueFiles:
           - $values/values/gaming/shadps4.yaml
