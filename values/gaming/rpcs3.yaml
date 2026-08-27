@@ -52,7 +52,20 @@ env:
 
 sunshine:
   enabled: true
-  privileged: true
+  # privileged:true removido (2026-08-26): CONFIRMADO AO VIVO no cluster
+  # (kubectl exec + ls /dev/input dentro do pod) que privileged por si so
+  # da acesso ao /dev real do HOST, ignorando completamente o isolamento
+  # do container - MESMO sem o mount explicito "dev-input" (ja removido
+  # antes, mas nao bastou: o pod ainda enxergava 31 event devices do host,
+  # incluindo os gamepads virtuais criados pelo Sunshine de TODOS os
+  # outros emuladores no mesmo node). Era essa a causa raiz de verdade do
+  # controle/mouse funcionar em todos os emuladores ao mesmo tempo.
+  # NET_ADMIN (via securityContext.capabilities abaixo) + os mounts ja
+  # existentes de /dev/uinput e /dev/uhid (escopados, CharDevice) sao
+  # suficientes pro Sunshine criar seus proprios devices virtuais sem
+  # expor o /dev do host - mesma configuracao ja validada e funcionando
+  # sem esse bug no docker-compose local deste projeto.
+  privileged: false
   # -- Porta unica por emulador (todas as outras portas do Sunshine sao
   # offsets fixos a partir desta - ver comentario no values.yaml do chart).
   port: 48289
@@ -134,3 +147,11 @@ resources:
 # SIGSTOP existe pra preservar (confirmado em producao, 2026-08-24).
 probes:
   enabled: false
+
+# NET_ADMIN escopado (2026-08-26) - substitui sunshine.privileged:true acima.
+# Sunshine precisa dessa capability pra criar mouse/teclado/gamepad virtuais
+# via uinput/uhid sem crashar (mesmo minimo validado no docker-compose local).
+securityContext:
+  capabilities:
+    add:
+      - NET_ADMIN
