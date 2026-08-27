@@ -55,20 +55,24 @@ env:
 
 sunshine:
   enabled: true
-  # privileged:true removido (2026-08-26): CONFIRMADO AO VIVO no cluster
-  # (kubectl exec + ls /dev/input dentro do pod) que privileged por si so
-  # da acesso ao /dev real do HOST, ignorando completamente o isolamento
-  # do container - MESMO sem o mount explicito "dev-input" (ja removido
-  # antes, mas nao bastou: o pod ainda enxergava 31 event devices do host,
-  # incluindo os gamepads virtuais criados pelo Sunshine de TODOS os
-  # outros emuladores no mesmo node). Era essa a causa raiz de verdade do
-  # controle/mouse funcionar em todos os emuladores ao mesmo tempo.
-  # NET_ADMIN (via securityContext.capabilities abaixo) + os mounts ja
-  # existentes de /dev/uinput e /dev/uhid (escopados, CharDevice) sao
-  # suficientes pro Sunshine criar seus proprios devices virtuais sem
-  # expor o /dev do host - mesma configuracao ja validada e funcionando
-  # sem esse bug no docker-compose local deste projeto.
-  privileged: false
+  # REVERTIDO PRA true (2026-08-26): tentativa de tirar privileged (ver
+  # historico do commit) CONFIRMOU dois problemas reais em sequencia:
+  # 1) privileged:true por si so expoe o /dev/input inteiro do HOST pro
+  #    container (confirmado via kubectl exec + ls, 31 event devices,
+  #    incluindo gamepads virtuais de OUTROS emuladores no mesmo node) -
+  #    causa raiz do controle/mouse vazar entre emuladores.
+  # 2) Removendo privileged (so NET_ADMIN + os mounts hostPath CharDevice
+  #    de /dev/uinput e /dev/uhid), o Sunshine passou a falhar com
+  #    "Unable to create virtual mouse/keyboard: Operation not permitted"
+  #    - confirmado no sunshine.log. O Kubernetes (diferente do Docker)
+  #    nao propaga automaticamente a permissao de cgroup pro device
+  #    quando e so um hostPath char-device sem privileged - resultado:
+  #    SEM NENHUM input funcionando (pior que o vazamento).
+  # Como (2) e mais grave que (1) pro uso real, revertido pra privileged:
+  # true por enquanto ate confirmar uma capability minima que resolva o
+  # uinput sem reabrir o /dev do host (SYS_ADMIN e candidato, ainda nao
+  # testado em producao).
+  privileged: true
   # -- Porta unica por emulador (todas as outras portas do Sunshine sao
   # offsets fixos a partir desta - ver comentario no values.yaml do chart).
   port: 48689
