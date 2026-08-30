@@ -15,5 +15,7 @@ metadata:
 spec:
   ipAddressPools:
     - homelab-pool
+  {{- if .Values.interface }}
   interfaces:
     - {{ .Values.interface }}
+  {{- end }}

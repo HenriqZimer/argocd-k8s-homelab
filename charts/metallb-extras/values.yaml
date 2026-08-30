@@ -1,3 +1,13 @@
+# -- Empty by default: lets MetalLB auto-select the right interface on
+# each node instead of restricting L2Advertisement to one hardcoded name.
+# The cluster's worker/control-plane VMs don't all use the same NIC name
+# (confirmed 2026-08-30: articuno/zapdos have "eth0", but moltres has
+# "ens18" - with interface: eth0 hardcoded, moltres's speaker logged "the
+# specified interfaces used to announce LB IP don't exist" and could never
+# announce, which destabilized L2 leader election for the whole pool -
+# every LoadBalancer IP (Traefik's 192.168.1.150 included) became
+# unreachable whenever election landed on moltres). Only set this back to
+# a specific name if you need to RESTRICT announcement to one NIC.
 namespace: networking
 addressRange: 192.168.1.150-192.168.1.155
-interface: eth0
+interface: ""
