@@ -10,7 +10,7 @@ spec:
   sources:
     - repoURL: https://henriqzimer.github.io/pcsx2-helm-chart
       chart: pcsx2
-      targetRevision: "1.5.5"
+      targetRevision: "1.5.6"
       helm:
         valueFiles:
           - $values/values/gaming/pcsx2.yaml
