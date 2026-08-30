@@ -10,7 +10,7 @@ spec:
   sources:
     - repoURL: https://henriqzimer.github.io/rpcs3-helm-chart
       chart: rpcs3
-      targetRevision: "1.3.4"
+      targetRevision: "1.3.5"
       helm:
         valueFiles:
           - $values/values/gaming/rpcs3.yaml

@@ -10,7 +10,7 @@ spec:
   sources:
     - repoURL: https://henriqzimer.github.io/xemu-helm-chart
       chart: xemu
-      targetRevision: "1.4.4"
+      targetRevision: "1.4.5"
       helm:
         valueFiles:
           - $values/values/gaming/xemu.yaml
