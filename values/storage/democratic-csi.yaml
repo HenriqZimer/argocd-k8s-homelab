@@ -7,13 +7,19 @@
 #  System Settings -> API Keys). Sem isso o controller nao sobe.
 # Datasets "slowbro/kubernetes/vols" e "slowbro/kubernetes/snapshots"
 # precisam existir no TrueNAS (ou o parent com permissao de criar filhos).
+#
+# StorageClass gerada: "freenas-iscsi" (RWO, nao-default). A default do
+# cluster continua sendo a NFS (nfs-slowbro).
 
 csiDriver:
   name: "org.democratic-csi.iscsi"
 
 storageClasses:
-  - name: freenas-nfs
-    defaultClass: true
+  # Classe de bloco (RWO) para workloads sensiveis a latencia/IOPS:
+  # Postgres, MySQL/MariaDB, Prometheus, Loki, MinIO, Vault.
+  # Nao e a default do cluster (essa e a NFS nfs-slowbro).
+  - name: freenas-iscsi
+    defaultClass: false
     reclaimPolicy: Delete
     volumeBindingMode: Immediate
     allowVolumeExpansion: true

@@ -24,8 +24,9 @@ storageClass:
 
   # Set StorageClass as the default StorageClass
   # Ignored if storageClass.create is false
-  # Default do cluster agora e a StorageClass do democratic-csi (freenas-nfs).
-  defaultClass: false
+  # Default do cluster: NFS (RWX, throughput). Workloads que precisam de
+  # latencia/IOPS (Postgres etc.) usam storageClassName: freenas-iscsi.
+  defaultClass: true
 
   # Set a StorageClass name
   # Ignored if storageClass.create is false
