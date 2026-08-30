@@ -1,0 +1,68 @@
+# democratic-csi - driver freenas-api-iscsi (TrueNAS via API REST)
+# Backend: TrueNAS em 192.168.1.102, pool/dataset pai "slowbro/kubernetes"
+#
+# !!! TODO ANTES DO PRIMEIRO SYNC !!!
+# Preencher driver.config.httpConnection.apiKey com a API key do TrueNAS
+# (TrueNAS UI -> Credentials -> Local Users -> root -> API Keys, ou
+#  System Settings -> API Keys). Sem isso o controller nao sobe.
+# Datasets "slowbro/kubernetes/vols" e "slowbro/kubernetes/snapshots"
+# precisam existir no TrueNAS (ou o parent com permissao de criar filhos).
+
+csiDriver:
+  name: "org.democratic-csi.iscsi"
+
+storageClasses:
+  - name: freenas-nfs
+    defaultClass: true
+    reclaimPolicy: Delete
+    volumeBindingMode: Immediate
+    allowVolumeExpansion: true
+    parameters:
+      fsType: ext4
+    mountOptions: []
+    secrets:
+      provisioner-secret:
+      controller-publish-secret:
+      node-stage-secret:
+      node-publish-secret:
+      controller-expand-secret:
+
+driver:
+  config:
+    driver: freenas-api-iscsi
+    instance_id:
+    httpConnection:
+      protocol: http
+      host: 192.168.1.102
+      port: 80
+      # TODO: API key do TrueNAS (ver cabecalho do arquivo)
+      apiKey: ""
+      allowInsecure: true
+      apiVersion: 2
+    zfs:
+      # datasetParentName e detachedSnapshotsDatasetParentName sao irmaos
+      # sob slowbro/kubernetes (um nao pode ser filho do outro).
+      datasetParentName: slowbro/kubernetes/vols
+      detachedSnapshotsDatasetParentName: slowbro/kubernetes/snapshots
+      zvolCompression:
+      zvolDedup:
+      zvolEnableReservation: false
+      zvolBlocksize:
+    iscsi:
+      targetPortal: "192.168.1.102:3260"
+      targetPortals: []
+      namePrefix: csi-
+      nameSuffix: "-homelab"
+      # targetGroupPortalGroup / targetGroupInitiatorGroup: IDs dos grupos
+      # de portal e initiator ja criados no TrueNAS (Sharing -> iSCSI).
+      targetGroups:
+        - targetGroupPortalGroup: 1
+          targetGroupInitiatorGroup: 1
+          targetGroupAuthType: None
+          targetGroupAuthGroup:
+      extentInsecureTpc: true
+      extentXenCompat: false
+      extentDisablePhysicalBlocksize: true
+      extentBlocksize: 512
+      extentRpm: "SSD"
+      extentAvailThreshold: 0

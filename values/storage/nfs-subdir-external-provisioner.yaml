@@ -24,7 +24,8 @@ storageClass:
 
   # Set StorageClass as the default StorageClass
   # Ignored if storageClass.create is false
-  defaultClass: true
+  # Default do cluster agora e a StorageClass do democratic-csi (freenas-nfs).
+  defaultClass: false
 
   # Set a StorageClass name
   # Ignored if storageClass.create is false
