@@ -8,10 +8,17 @@ replicaCount: 1
 # no terraform-homelab), e o runtime "nvidia" ja e o default do containerd
 # nesse node - nao precisa de runtimeClassName por pod.
 #
-# Modelo unico (qwen3-vl:8b, ~6.1GB em Q4) em vez de dois modelos menores - a RTX 3050 tem 8GB
-# de VRAM, e dois modelos residentes ao mesmo tempo nao deixariam folga pra contexto/overhead do
-# encoder de visao (risco de estourar VRAM e o Ollama ficar descarregando/recarregando modelo a
-# cada troca, pior que a fila unica de hoje). Substitui o qwen3.5:4b anterior.
+# Modelo unico (~6.1GB em Q4) em vez de dois modelos menores - a RTX 3050 tem 8GB de VRAM, e dois
+# modelos residentes ao mesmo tempo nao deixariam folga pra contexto/overhead do encoder de
+# visao. Substitui o qwen3.5:4b anterior.
+#
+# "-instruct", NAO a tag "qwen3-vl:8b" pura: essa (sem sufixo) e a variante "thinking" - gera um
+# bloco <think>...</think> gigante antes de responder e IGNORA a opcao think:false (bug conhecido,
+# ollama/ollama#14798 - falta o template que permite desligar o raciocinio nessa tag). Cada
+# chamada real (classificar imagem, revisar evidencia) levava 5-8 minutos e as vezes voltava
+# vazia (estourava algum limite ainda "pensando"). "-instruct" e a variante sem raciocinio,
+# recomendada pra pipeline de producao (~45-60 tok/s numa 4090; aqui, mais devagar, mas sem o
+# overhead do thinking).
 ollama:
   gpu:
     enabled: true
@@ -19,7 +26,7 @@ ollama:
     number: 1
   models:
     pull:
-      - qwen3-vl:8b
+      - qwen3-vl:8b-instruct
     run: []
 
 nodeSelector:
