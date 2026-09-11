@@ -2,14 +2,16 @@ image:
   repository: ollama/ollama
   pullPolicy: IfNotPresent
 
-# Temporariamente 0 pra liberar a unica GPU do cluster (moltres) pro teste
-# do cemu-helm-chart (Wii U via Vulkan software/llvmpipe e impraticavel).
-# Reverter (voltar pra 1, ou remover essa linha) quando o teste terminar.
-replicaCount: 0
+replicaCount: 1
 
 # GPU passthrough: so o worker "moltres" tem a RTX 3050 (ver worker_gpu_pci_ids
 # no terraform-homelab), e o runtime "nvidia" ja e o default do containerd
 # nesse node - nao precisa de runtimeClassName por pod.
+#
+# Modelo unico (qwen3-vl:8b, ~6.1GB em Q4) em vez de dois modelos menores - a RTX 3050 tem 8GB
+# de VRAM, e dois modelos residentes ao mesmo tempo nao deixariam folga pra contexto/overhead do
+# encoder de visao (risco de estourar VRAM e o Ollama ficar descarregando/recarregando modelo a
+# cada troca, pior que a fila unica de hoje). Substitui o qwen3.5:4b anterior.
 ollama:
   gpu:
     enabled: true
@@ -17,7 +19,7 @@ ollama:
     number: 1
   models:
     pull:
-      - qwen3.5:4b
+      - qwen3-vl:8b
     run: []
 
 nodeSelector:
