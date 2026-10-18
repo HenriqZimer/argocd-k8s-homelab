@@ -1,0 +1,25 @@
+# Chaos Mesh - usado pelo job "Chaos Test (staging)" do pipeline do backend (apps/backend/
+# .gitlab-ci.yml), que mata um pod do backend em staging (PodChaos) e confere que /health continua
+# respondendo. O k6-operator (teste de carga) está em values/development/k6-operator.yaml.
+#
+# Talos: o runtime é containerd e o socket fica em /run/containerd/containerd.sock (o padrão do
+# chart aponta pro socket do Docker/CRI-O e o chaos-daemon não conseguiria achar os containers).
+chaosDaemon:
+  runtime: containerd
+  socketPath: /run/containerd/containerd.sock
+  # O daemon precisa ser privilegiado (nsenter nos containers alvo) - o namespace chaos-mesh está
+  # com podSecurity "privileged" em charts/cluster-bootstrap/values.yaml.
+  privileged: true
+
+controllerManager:
+  replicaCount: 1
+  # Sem filtro de namespace: o experimento roda no namespace do alvo (avisa-ia-staging), criado
+  # pelo CI com a ServiceAccount ci-loadtest (Role em avisa-ia-staging com podchaos).
+  enableFilterNamespace: false
+
+# Interface web e servidor DNS de chaos desligados: só usamos PodChaos via kubectl pelo CI, e a
+# interface sem autenticação não deve ficar exposta.
+dashboard:
+  create: false
+dnsServer:
+  create: false

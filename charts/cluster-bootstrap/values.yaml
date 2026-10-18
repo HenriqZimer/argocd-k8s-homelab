@@ -13,3 +13,6 @@ namespaces:
     podSecurityPrivileged: true
   - name: security
     podSecurityPrivileged: true
+  - name: chaos-mesh
+    # chaos-daemon roda privilegiado em cada nó (injeta falhas nos containers alvo).
+    podSecurityPrivileged: true
