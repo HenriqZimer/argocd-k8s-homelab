@@ -1,4 +1,10 @@
 namespaces:
+  - name: development
+    # Namespace compartilhado onde ArgoCD roda e onde os jobs do GitLab Runner
+    # (executor Kubernetes com privileged = true) sao criados. O cluster Talos
+    # aplica enforce: baseline por padrao (so kube-system e isento), o que
+    # rejeita pods privilegiados. Elevar para privileged libera os job pods.
+    podSecurityPrivileged: true
   - name: networking
     podSecurityPrivileged: true
   - name: monitoring
