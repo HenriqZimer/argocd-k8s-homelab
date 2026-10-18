@@ -287,7 +287,11 @@ customResources:
           # capacidade fisica do host Proxmox (arceus), nao uma conta cloud com
           # custo marginal por node ligado.
           consolidationPolicy: WhenEmptyOrUnderutilized
-          consolidateAfter: 30s
+          # 10m (era 30s): com 30s o Karpenter derrubava o node logo depois de um job leve (ex.:
+          # ArgoCD Deploy) e despejava o pod do proximo job via Eviction API -> "system failure"
+          # no GitLab Runner. Os pods de job tambem levam karpenter.sh/do-not-disrupt (ver
+          # values/development/gitlab-runner.yaml); isto so reduz o vai-e-vem de VMs.
+          consolidateAfter: 10m
           # Budget absoluto (nao percentual): o default do Karpenter e "10%",
           # que arredonda pra 0 num pool pequeno de homelab e trava a
           # consolidacao/expiracao automatica silenciosamente.

@@ -525,6 +525,10 @@ runners:
         cpu_limit_overwrite_max_allowed = "8"
         memory_limit_overwrite_max_allowed = "16Gi"
         poll_timeout = 900
+        # Os pods de job caem em nodes do Karpenter; sem isto, a consolidacao (consolidateAfter)
+        # remove o node no meio do job: "EvictionByEvictionAPI" / runner_system_failure.
+        [runners.kubernetes.pod_annotations]
+          "karpenter.sh/do-not-disrupt" = "true"
 
 
   ## Absolute path for an existing runner configuration file
