@@ -185,7 +185,11 @@ affinity: {}
 
 # -- Any extra environments for Karpenter
 extraEnvs:
-  []
+  # replicaCount: 1 -> eleição de líder não protege nada, só derruba o controlador: com o lease de
+  # 15s, qualquer soluço da API do cluster faz "panic: leader election lost" (151 reinícios,
+  # leaseTransitions=322) e o Karpenter fica em loop sem criar nem apagar VMs.
+  - name: DISABLE_LEADER_ELECTION
+    value: "true"
   # - name: KUBERNETES_SERVICE_HOST
   #   value: 127.0.0.1
 
