@@ -75,7 +75,10 @@ romm:
     # revisao e falham ao migrar. Fixado na ultima estavel (nao alpha/beta).
     # Atualizado para 5.2.0 em 2026-08-20 (chart bumpado de 1.3.0 para 1.5.5
     # junto - ver targetRevision em apps/07-gaming/romm.yaml).
-    tag: "5.2.0"
+    # Atualizado para 5.4.0 em 2026-10-19 (chart 1.6.0). O primeiro boot roda
+    # migrations longas (15-20 min em biblioteca grande) - nao reiniciar o pod
+    # enquanto isso.
+    tag: "5.4.0"
     # -- Image pull policy (Always, IfNotPresent, or Never).
     pullPolicy: IfNotPresent
 
@@ -186,52 +189,84 @@ romm:
   # (server-to-server), autenticado com o mesmo STREAMING_BROKER_SECRET do
   # Secret streaming-broker-secret.
   #
-  # Revertido de volta pros deployments do cluster (pcsx2/dolphin/xemu/eden
-  # rodando no namespace gaming). NAO adicionar rpcs3/ppsspp/azahar/flycast/
-  # shadps4 aqui (tentado e revertido em 2026-08-23) - apesar de terem
-  # ingress *-stream.henriqzimer.com.br funcionando (usado por Sunshine/
-  # acesso direto), nenhum deles tem um broker Docker Mod publicado em
-  # ghcr.io/loneangelfayt/<app>-romm-integration-mod (confirmado via
-  # manifest lookup: rpcs3 404, ppsspp/azahar/flycast/shadps4 403/nao
-  # existe). RPCS3 esta "planned as a follow-up" nos docs oficiais do
-  # RomM (docs.romm.app/latest/using/emulator-streaming) - so PCSX2/
-  # Dolphin/xemu sao suportados oficialmente (Eden via mod da comunidade).
-  # PSP/3DS/Dreamcast/PS4 nem estao no roadmap. Adicionar essas entradas
-  # sem o broker so resulta em 503 "broker unreachable" ao tentar lancar.
+  # Streaming via protocol "webstation" (testado em 2026-10-19): um unico
+  # container (app `webstation`) atende todas as plataformas, no lugar dos
+  # pods por emulador com Docker Mods (deprecados upstream). Os mods antigos
+  # so cobriam PCSX2/Dolphin/xemu/Eden; o webstation cobre tambem RPCS3,
+  # Azahar, PPSSPP, Flycast e shadPS4. O formato antigo ficou como rollback
+  # no comentario do bloco `streaming` abaixo.
   #
   # `host` e o hostname do Ingress (Traefik, *.henriqzimer.com.br) porque
-  # precisa ser alcancavel pelo NAVEGADOR do usuario, nao pela rede interna
-  # do cluster. `broker_host` e chamado direto pelo backend do romm
-  # (server-to-server), por isso usa o Service DNS interno
-  # (<app>.gaming.svc.cluster.local:<porta "broker" do Service>). A porta
-  # NAO e sempre 8000 - cada emulador usa uma porta de broker unica
-  # (streaming.brokerPort no values de cada chart) pra evitar colisao no
-  # mesmo node (moltres): pcsx2=8001, dolphin=8000, xemu=8002, eden=8003.
-  # Corrigido em 2026-08-23 (estava fixo em :8000 pra todos, so o dolphin
-  # funcionava por coincidencia - os outros 3 davam "Connection refused").
+  # precisa ser alcancavel pelo NAVEGADOR do usuario (HTTPS). `broker_host` e
+  # chamado direto pelo backend do romm (server-to-server), por isso usa o
+  # Service DNS interno. Requer DNS local apontando
+  # webstation-stream.henriqzimer.com.br para 192.168.1.150.
   config:
     enabled: true
     name: romm-config-file
     data: |
+      # OBRIGATORIO desde RomM 5.3: declarar o layout da biblioteca, senao o
+      # romm recusa iniciar. Layout atual: /romm/library/roms/<plataforma>/<jogo>
+      # e /romm/library/bios/<plataforma> (ver mounts dos emuladores).
+      filesystem:
+        structure:
+          default: "roms/{platform}/{game}"
+          firmware: "bios/{platform}"
       streaming:
         enabled: true
         containers:
-          - platform: ps2
-            host: https://pcsx2-stream.henriqzimer.com.br
-            broker_host: http://pcsx2.gaming.svc.cluster.local:8001
-            label: PCSX2
-          - platform: ngc
-            host: https://dolphin-stream.henriqzimer.com.br
-            broker_host: http://dolphin.gaming.svc.cluster.local:8000
-            label: Dolphin
-          - platform: xbox
-            host: https://xemu-stream.henriqzimer.com.br
-            broker_host: http://xemu.gaming.svc.cluster.local:8002
-            label: xemu
-          - platform: switch
-            host: https://eden-stream.henriqzimer.com.br
-            broker_host: http://eden.gaming.svc.cluster.local:8003
-            label: Eden
+          # Teste do protocolo webstation (2026-10-19): UM container atende todas
+          # as plataformas (app `webstation`, values/gaming/webstation.yaml).
+          # `host` e acessado pelo NAVEGADOR (HTTPS, Ingress Traefik, LAN-only);
+          # `broker_host` e server-to-server (Service interno, porta HTTP 3000,
+          # servido sob o mesmo subfolder). Autenticado com o
+          # STREAMING_BROKER_SECRET (igual ao BROKER_SECRET do webstation).
+          # library_path = onde o container ve a biblioteca (nao mudar: o
+          # historico de saves/states e indexado por ele).
+          #
+          # ROLLBACK (formato antigo, um pod por emulador com broker mod):
+          #   - platform: ps2     host: https://pcsx2-stream.henriqzimer.com.br    broker_host: http://pcsx2.gaming.svc.cluster.local:8001   label: PCSX2
+          #   - platform: ngc     host: https://dolphin-stream.henriqzimer.com.br  broker_host: http://dolphin.gaming.svc.cluster.local:8000  label: Dolphin
+          #   - platform: xbox    host: https://xemu-stream.henriqzimer.com.br     broker_host: http://xemu.gaming.svc.cluster.local:8002    label: xemu
+          #   - platform: switch  host: https://eden-stream.henriqzimer.com.br     broker_host: http://eden.gaming.svc.cluster.local:8003    label: Eden
+          # (cada um como item da lista, com os campos em linhas separadas)
+          - protocol: webstation
+            host: https://webstation-stream.henriqzimer.com.br
+            subfolder: /streaming
+            broker_host: http://webstation.gaming.svc.cluster.local:3000
+            library_path: /romm/library
+            label: Emulation station
+            platforms:
+              ps2:
+                emulator: pcsx2
+                label: PCSX2
+              ngc:
+                emulator: dolphin
+                label: Dolphin
+              wii:
+                emulator: dolphin
+                label: Dolphin
+              xbox:
+                emulator: xemu
+                label: xemu
+              switch:
+                emulator: eden
+                label: Eden
+              ps3:
+                emulator: rpcs3
+                label: RPCS3
+              3ds:
+                emulator: azahar
+                label: Azahar
+              psp:
+                emulator: ppsspp
+                label: PPSSPP
+              dc:
+                emulator: flycast
+                label: Flycast
+              ps4:
+                emulator: shadps4
+                label: shadPS4
 
 mariadb:
   enabled: false
