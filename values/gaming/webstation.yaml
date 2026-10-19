@@ -1,0 +1,101 @@
+# Webstation (RomM Emulator Streaming, protocol: webstation) - UM container
+# (Selkies + todos os emuladores + romm-broker) que atende todas as
+# plataformas, no lugar dos pods por emulador (pcsx2/dolphin/xemu/eden/...)
+# com os Docker Mods *-romm-integration (deprecados). Docs:
+# docs.romm.app/latest/using/emulator-streaming e
+# docs.romm.app/latest/using/emulator-streaming-migration.
+#
+# Os pods antigos continuam rodando em paralelo durante o teste (usados via
+# Sunshine/acesso direto); so o streaming do RomM aponta pra ca (ver
+# streaming.containers em values/gaming/romm.yaml). Se o teste nao for melhor,
+# basta restaurar o bloco antigo do romm.yaml e apagar este app.
+#
+# Acesso LAN-only via Traefik (192.168.1.150), mesmo padrao dos *-stream.
+# Requer DNS local (Pi-hole 192.168.1.106 ou /etc/hosts) apontando
+# webstation-stream.henriqzimer.com.br -> 192.168.1.150. O browser PRECISA
+# acessar via HTTPS (Selkies/WebRTC exige secure context) - o wildcard
+# *.henriqzimer.com.br do Traefik ja cobre.
+
+replicaCount: 1
+
+image:
+  tag: "v0.15.1"
+
+# BROKER_SECRET vem do mesmo Secret do romm (sincronizado do Vault pelo
+# VaultStaticSecret em charts/romm-extras, que ja expoe a chave BROKER_SECRET
+# alem de STREAMING_BROKER_SECRET). Precisa ser igual ao STREAMING_BROKER_SECRET
+# do romm.
+broker:
+  existingSecret: streaming-broker-secret
+  existingSecretKey: BROKER_SECRET
+
+env:
+  PUID: "1000"
+  PGID: "1000"
+  TZ: "America/Sao_Paulo"
+  # -- Precisa bater com o ingress path abaixo e com `subfolder` do container
+  # em romm.yaml (streaming.containers), barra final incluida.
+  SUBFOLDER: "/streaming/"
+  # -- Mesmo ajuste dos emuladores atuais (ver values/gaming/eden.yaml):
+  # encode via NVENC com CBR fixo, 60fps.
+  SELKIES_FRAMERATE: "60"
+
+# -- GPU NVIDIA do moltres (RTX 3050). count: 0 NAO pede nvidia.com/gpu (que
+# alocaria a GPU inteira pra este pod) - o runtime "nvidia" ja e o default do
+# containerd no worker com GPU e NVIDIA_VISIBLE_DEVICES=all expoe a GPU,
+# compartilhando com os demais pods (mesmo racional dos values dos emuladores).
+# A imagem exige driver NVIDIA do host >= 580 - conferir com `nvidia-smi` no
+# moltres se o pod nao subir.
+gpu:
+  enabled: true
+  vendor: nvidia
+  nvidia:
+    count: 0
+    driverCapabilities: all
+
+nodeSelector:
+  kubernetes.io/arch: amd64
+  nvidia.com/gpu.present: "true"
+
+tolerations:
+  - key: nvidia.com/gpu
+    value: present
+    effect: NoSchedule
+
+shmSize: 4Gi
+
+service:
+  type: ClusterIP
+
+ingress:
+  enabled: true
+  className: "traefik"
+  hosts:
+    - host: webstation-stream.henriqzimer.com.br
+      paths:
+        - path: /streaming
+          pathType: Prefix
+  tls: []
+
+persistence:
+  # -- /config: settings dos emuladores, BIOS/firmware/keys e saves.
+  config:
+    enabled: true
+    type: pvc
+    accessMode: ReadWriteOnce
+    size: 20Gi
+    storageClass: nfs-slowbro
+  # -- Mesma biblioteca do romm, no mesmo path (/romm/library).
+  library:
+    enabled: true
+    type: pvc
+    existingClaim: romm-library-truenas
+    readOnly: true
+
+resources:
+  requests:
+    cpu: 500m
+    memory: 2Gi
+  limits:
+    cpu: "6"
+    memory: 10Gi
