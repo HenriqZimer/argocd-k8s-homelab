@@ -1,0 +1,4 @@
+apiVersion: v2
+name: webstation-extras
+description: Recursos extras do webstation que o chart upstream nao tem (Service LoadBalancer do Sunshine/Moonlight)
+version: 1.0.0

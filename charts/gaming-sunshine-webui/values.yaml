@@ -35,5 +35,9 @@ emulators:
   - name: shadps4
     host: shadps4-sunshine.henriqzimer.com.br
     webPort: 48790
+  # -- webstation-sunshine-mod (SUNSHINE_PORT 48889 -> Web UI 48890).
+  - name: webstation
+    host: webstation-sunshine.henriqzimer.com.br
+    webPort: 48890
 
 ingressClassName: traefik

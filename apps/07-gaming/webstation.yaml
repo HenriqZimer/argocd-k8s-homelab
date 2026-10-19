@@ -17,6 +17,9 @@ spec:
     - repoURL: https://github.com/henriqzimer/argocd-k8s-homelab.git
       targetRevision: main
       ref: values
+    - repoURL: https://github.com/henriqzimer/argocd-k8s-homelab.git
+      targetRevision: main
+      path: charts/webstation-extras
   destination:
     server: https://kubernetes.default.svc
     namespace: gaming

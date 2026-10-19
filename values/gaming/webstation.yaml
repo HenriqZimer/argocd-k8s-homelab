@@ -37,6 +37,19 @@ env:
   # -- Mesmo ajuste dos emuladores atuais (ver values/gaming/eden.yaml):
   # encode via NVENC com CBR fixo, 60fps.
   SELKIES_FRAMERATE: "60"
+  # -- Sunshine/Moonlight (2026-10-19): menos input lag que o stream do
+  # navegador. Mod proprio (~/projetos/docker/webstation-sunshine-mod):
+  # captura o compositor do Selkies via wlr-screencopy + NVENC, e troca os
+  # gamepads do Selkies pra devices reais do kernel (uinput) pra que os do
+  # Moonlight tambem cheguem nos emuladores. Teclado/mouse do Moonlight NAO
+  # funcionam (limitacao do compositor do Selkies) - usar gamepad e lancar
+  # o jogo pelo RomM. Service LoadBalancer em charts/webstation-extras.
+  DOCKER_MODS: "ghcr.io/henriqzimer/webstation-sunshine-mod:latest"
+  # -- Precisa bater com sunshine.port em charts/webstation-extras/values.yaml.
+  SUNSHINE_PORT: "48889"
+  # -- Web UI do Sunshine via IP compartilhado do LoadBalancer ou via
+  # IngressRoute (charts/gaming-sunshine-webui).
+  SUNSHINE_CSRF_ALLOWED_ORIGINS: "https://192.168.1.151:48890,https://webstation-sunshine.henriqzimer.com.br"
 
 # -- GPU NVIDIA do moltres (RTX 3050). count: 0 NAO pede nvidia.com/gpu (que
 # alocaria a GPU inteira pra este pod) - o runtime "nvidia" ja e o default do
@@ -95,6 +108,16 @@ persistence:
     type: pvc
     existingClaim: romm-library-truenas
     readOnly: true
+
+# -- privileged: unico jeito (ja confirmado com os emuladores antigos, ver
+# sunshine.privileged em values/gaming/eden.yaml) de ter /dev/uinput e
+# /dev/uhid funcionando no container - sem eles o Sunshine nao cria os
+# gamepads virtuais e o mod volta pro comportamento original do Selkies
+# (Moonlight so com video). O vazamento de input entre emuladores que o
+# privileged causava nos pods antigos nao se aplica mais: agora e um
+# container so.
+securityContext:
+  privileged: true
 
 resources:
   requests:

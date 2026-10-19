@@ -1,0 +1,28 @@
+# Moonlight -> Sunshine dentro do pod do webstation. O chart do webstation
+# nao declara containerPorts do Sunshine, entao os targetPort sao numericos
+# (mesma porta do Service).
+{{- $p := int .Values.sunshine.port }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: webstation-sunshine
+  labels:
+    app.kubernetes.io/name: webstation
+    app.kubernetes.io/component: sunshine
+  annotations:
+    metallb.io/allow-shared-ip: {{ .Values.sunshine.sharedIPKey | quote }}
+spec:
+  type: LoadBalancer
+  loadBalancerIP: {{ .Values.sunshine.loadBalancerIP }}
+  externalTrafficPolicy: {{ .Values.sunshine.externalTrafficPolicy }}
+  selector:
+    {{- toYaml .Values.selector | nindent 4 }}
+  ports:
+    - { name: sun-https,   port: {{ sub $p 5 }},  targetPort: {{ sub $p 5 }},  protocol: TCP }
+    - { name: sun-http,    port: {{ $p }},        targetPort: {{ $p }},        protocol: TCP }
+    - { name: sun-web,     port: {{ add $p 1 }},  targetPort: {{ add $p 1 }},  protocol: TCP }
+    - { name: sun-rtsp,    port: {{ add $p 21 }}, targetPort: {{ add $p 21 }}, protocol: TCP }
+    - { name: sun-video,   port: {{ add $p 9 }},  targetPort: {{ add $p 9 }},  protocol: UDP }
+    - { name: sun-control, port: {{ add $p 10 }}, targetPort: {{ add $p 10 }}, protocol: UDP }
+    - { name: sun-audio,   port: {{ add $p 11 }}, targetPort: {{ add $p 11 }}, protocol: UDP }
+    - { name: sun-mic,     port: {{ add $p 13 }}, targetPort: {{ add $p 13 }}, protocol: UDP }

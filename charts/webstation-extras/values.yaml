@@ -1,0 +1,16 @@
+# -- Sunshine (webstation-sunshine-mod, via DOCKER_MODS em
+# values/gaming/webstation.yaml). `port` precisa bater com SUNSHINE_PORT do
+# pod - as outras portas sao offsets fixos do Sunshine. 48889 segue a
+# sequencia dos emuladores antigos (dolphin 47989 ... shadps4 48789) e nao
+# colide com nenhum Service que ainda existe no IP compartilhado.
+sunshine:
+  port: 48889
+  loadBalancerIP: "192.168.1.151"
+  # Mesma chave/policy dos *-sunshine dos emuladores - o MetalLB so
+  # compartilha o IP entre Services compativeis.
+  sharedIPKey: "gaming-sunshine"
+  externalTrafficPolicy: Cluster
+
+selector:
+  app.kubernetes.io/name: webstation
+  app.kubernetes.io/instance: webstation
