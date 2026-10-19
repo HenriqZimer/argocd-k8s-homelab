@@ -16,6 +16,13 @@
 
 replicaCount: 1
 
+# -- optional: o pod sobe mesmo sem o token no Vault (Moonlight so com o
+# app "Webstation").
+envFrom:
+  - secretRef:
+      name: webstation-moonlight
+      optional: true
+
 image:
   tag: "v0.15.1"
 
@@ -50,6 +57,12 @@ env:
   # -- Web UI do Sunshine via IP compartilhado do LoadBalancer ou via
   # IngressRoute (charts/gaming-sunshine-webui).
   SUNSHINE_CSRF_ALLOWED_ORIGINS: "https://192.168.1.151:48890,https://webstation-sunshine.henriqzimer.com.br"
+  # -- Lista do Moonlight por jogo: o mod le a biblioteca pela API do RomM e
+  # cada jogo abre a sessao pelo RomM (saves sincronizados). Token em
+  # ROMM_API_TOKEN, do Secret webstation-moonlight (Vault, ver
+  # charts/webstation-extras/templates/moonlight-secret.yaml). Hostname
+  # publico, mesmo do broker_host do romm (alcancavel de dentro do cluster).
+  ROMM_URL: "https://romm.henriqzimer.com.br"
 
 # -- GPU NVIDIA do moltres (RTX 3050). count: 0 NAO pede nvidia.com/gpu (que
 # alocaria a GPU inteira pra este pod) - o runtime "nvidia" ja e o default do
