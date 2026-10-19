@@ -1,3 +1,9 @@
+# DESATIVADO (2026-10-19): replicaCount 0 - o webstation (values/gaming/
+# webstation.yaml) passou a servir esta plataforma no streaming do RomM, num
+# container so. App/PVC/config mantidos (so nao roda, nao gasta RAM/CPU/VRAM
+# no moltres); pra reativar, voltar pra 1.
+replicaCount: 0
+
 # xemu (Xbox emulator) - web KasmVNC desktop, sem database proprio (nao usa
 # um Secret "-credentials" dedicado como o romm).
 #

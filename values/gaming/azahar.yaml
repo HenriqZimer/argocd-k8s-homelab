@@ -1,3 +1,9 @@
+# DESATIVADO (2026-10-19): replicaCount 0 - o webstation (values/gaming/
+# webstation.yaml) passou a servir esta plataforma no streaming do RomM, num
+# container so. App/PVC/config mantidos (so nao roda, nao gasta RAM/CPU/VRAM
+# no moltres); pra reativar, voltar pra 1.
+replicaCount: 0
+
 # Azahar (3DS) emulator - web KasmVNC desktop, no secrets/database needed
 # so this app doesn't use the Vault pattern like romm.
 #
