@@ -79,6 +79,15 @@ extraEnv:
     value: "-1"
   - name: OLLAMA_LOAD_TIMEOUT
     value: "15m"
+  # Flash attention + cache de contexto (KV) em q8_0: o KV cai pela metade (~2,4GB -> ~1,2GB com
+  # contexto 16384) com perda de qualidade desprezivel, o que deixa mais camadas do qwen3-vl 8B na
+  # GPU (RTX 3050 de 8GB; hoje ~63% GPU / 37% CPU no contexto 16384, 2,5 tok/s). Medido em
+  # 19/10: contexto 8192 ja da 5,6 tok/s (73% GPU); o 4B (qwen3-vl:4b-instruct) roda 100% na GPU
+  # a ~40 tok/s. Reavaliar depois deste ajuste com `ollama ps` (coluna PROCESSOR).
+  - name: OLLAMA_FLASH_ATTENTION
+    value: "1"
+  - name: OLLAMA_KV_CACHE_TYPE
+    value: "q8_0"
 
 ingress:
   enabled: true
