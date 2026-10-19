@@ -10,11 +10,9 @@
 # streaming.containers em values/gaming/romm.yaml). Se o teste nao for melhor,
 # basta restaurar o bloco antigo do romm.yaml e apagar este app.
 #
-# Acesso LAN-only via Traefik (192.168.1.150), mesmo padrao dos *-stream.
-# Requer DNS local (Pi-hole 192.168.1.106 ou /etc/hosts) apontando
-# webstation-stream.henriqzimer.com.br -> 192.168.1.150. O browser PRECISA
-# acessar via HTTPS (Selkies/WebRTC exige secure context) - o wildcard
-# *.henriqzimer.com.br do Traefik ja cobre.
+# Acesso via Traefik na MESMA origem do RomM: https://romm.henriqzimer.com.br/streaming/
+# (o browser PRECISA de HTTPS - Selkies/WebRTC exige secure context; o wildcard
+# *.henriqzimer.com.br do Traefik ja cobre). Nao precisa de DNS extra.
 
 replicaCount: 1
 
@@ -71,7 +69,13 @@ ingress:
   enabled: true
   className: "traefik"
   hosts:
-    - host: webstation-stream.henriqzimer.com.br
+    # -- Mesma origem do RomM (2026-10-19): o iframe do stream e o broker
+    # ficam em romm.henriqzimer.com.br/streaming (Traefik escolhe o path mais
+    # longo, o "/" do romm segue valendo pro resto). Evita DNS/cert/CORS de um
+    # segundo hostname (o webstation-stream tinha registro publico na
+    # Cloudflare que quebrava o acesso) e faz o broker deduzir o callback de
+    # saves como https://romm.henriqzimer.com.br (antes: o proprio webstation).
+    - host: romm.henriqzimer.com.br
       paths:
         - path: /streaming
           pathType: Prefix

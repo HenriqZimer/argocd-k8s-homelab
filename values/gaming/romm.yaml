@@ -196,11 +196,8 @@ romm:
   # Azahar, PPSSPP, Flycast e shadPS4. O formato antigo ficou como rollback
   # no comentario do bloco `streaming` abaixo.
   #
-  # `host` e o hostname do Ingress (Traefik, *.henriqzimer.com.br) porque
-  # precisa ser alcancavel pelo NAVEGADOR do usuario (HTTPS). `broker_host` e
-  # chamado direto pelo backend do romm (server-to-server), por isso usa o
-  # Service DNS interno. Requer DNS local apontando
-  # webstation-stream.henriqzimer.com.br para 192.168.1.150.
+  # `host` e um path (/streaming) na mesma origem do RomM; ver o comentario
+  # no bloco `streaming` abaixo.
   config:
     enabled: true
     name: romm-config-file
@@ -231,9 +228,18 @@ romm:
           #   - platform: switch  host: https://eden-stream.henriqzimer.com.br     broker_host: http://eden.gaming.svc.cluster.local:8003    label: Eden
           # (cada um como item da lista, com os campos em linhas separadas)
           - protocol: webstation
-            host: https://webstation-stream.henriqzimer.com.br
+            # Mesma origem do RomM: o webstation e servido em
+            # romm.henriqzimer.com.br/streaming (ingress em
+            # values/gaming/webstation.yaml). `host` e um path, entao
+            # `broker_host` e obrigatorio. Aponta pro hostname publico do RomM
+            # (via Traefik, alcancavel de dentro do cluster) e NAO pro Service
+            # interno: o broker deduz o endereco de callback do upload de saves
+            # a partir do request que recebe, e pelo Service interno ele
+            # tentava devolver o save pra si mesmo ("All connection attempts
+            # failed"). subfolder precisa bater com SUBFOLDER do webstation.
+            host: /streaming
             subfolder: /streaming
-            broker_host: http://webstation.gaming.svc.cluster.local:3000
+            broker_host: https://romm.henriqzimer.com.br
             library_path: /romm/library
             label: Emulation station
             platforms:
