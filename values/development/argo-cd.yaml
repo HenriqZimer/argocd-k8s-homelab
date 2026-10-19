@@ -212,7 +212,9 @@ configs:
     admin.enabled: true
 
     # -- Timeout to discover if a new manifests version got published to the repository
-    timeout.reconciliation: 120s
+    # 300s (era 120s): o controller chegou a 1,9 CPU num nó de 4 e derrubou o Vault (sondas estouravam).
+    # O deploy dos apps pede refresh na hora (argocd-deploy + ARGOCD_AUTH_TOKEN), então o polling pode ser mais folgado.
+    timeout.reconciliation: 300s
 
     # -- Maximum jitter added to the reconciliation timeout to spread out refreshes and reduce repo-server load
     timeout.reconciliation.jitter: 60s
