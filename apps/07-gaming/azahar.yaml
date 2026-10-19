@@ -12,6 +12,9 @@ spec:
       chart: azahar
       targetRevision: "1.4.6"
       helm:
+        # replicaCount: 0 (desativado, servido pelo webstation) - o
+        # values.schema.json do chart exige minimum 1.
+        skipSchemaValidation: true
         valueFiles:
           - $values/values/gaming/azahar.yaml
     - repoURL: https://github.com/henriqzimer/argocd-k8s-homelab.git

@@ -12,6 +12,9 @@ spec:
       chart: flycast
       targetRevision: "1.3.6"
       helm:
+        # replicaCount: 0 (desativado, servido pelo webstation) - o
+        # values.schema.json do chart exige minimum 1.
+        skipSchemaValidation: true
         valueFiles:
           - $values/values/gaming/flycast.yaml
     - repoURL: https://github.com/henriqzimer/argocd-k8s-homelab.git
