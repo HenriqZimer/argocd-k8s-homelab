@@ -99,3 +99,21 @@ resources:
   limits:
     cpu: "6"
     memory: 10Gi
+
+# -- BIOS/keys ja vivem na biblioteca do romm (/romm/library/bios/<plataforma>).
+# O /config do webstation e um volume novo e vazio, entao sem estes mounts o
+# PCSX2 sai logo no boot ("PCSX2 requires a PlayStation 2 BIOS", visto no
+# emulog.txt em 2026-10-19). Mesmo padrao dos pods antigos (pcsx2: bios/ps2 ->
+# /config/bios; eden: bios/switch -> .../eden/keys). Monta subPath da mesma
+# PVC da biblioteca, sem duplicar arquivos.
+extraVolumes:
+  - name: roms
+    persistentVolumeClaim:
+      claimName: romm-library-truenas
+extraVolumeMounts:
+  - name: roms
+    mountPath: /config/.config/PCSX2/bios
+    subPath: bios/ps2
+  - name: roms
+    mountPath: /config/.local/share/eden/keys
+    subPath: bios/switch
