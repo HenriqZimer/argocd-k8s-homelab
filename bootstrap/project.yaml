@@ -24,6 +24,7 @@ spec:
     - https://henriqzimer.github.io/eden-helm-chart
     - https://henriqzimer.github.io/flycast-helm-chart
     - https://henriqzimer.github.io/azahar-helm-chart
+    - https://henriqzimer.github.io/webstation-helm-chart
     - https://henriqzimer.github.io/shadps4-helm-chart
     - https://henriqzimer.github.io/rpcs3-helm-chart
     - https://henriqzimer.github.io/ppsspp-helm-chart
