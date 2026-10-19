@@ -20,6 +20,8 @@ replicaCount: 1
 # recomendada pra pipeline de producao (~45-60 tok/s numa 4090; aqui, mais devagar, mas sem o
 # overhead do thinking).
 ollama:
+  # O volume "ollama-data" (emptyDir, ver persistentVolume abaixo) fica aqui, fora de /root/.ollama.
+  mountPath: /tmp/ollama-data-unused
   gpu:
     enabled: true
     type: "nvidia"
@@ -47,10 +49,36 @@ resources:
     cpu: 4000m
     memory: 8Gi
 
-# Modelos ficam no PVC (NFS), nao no disco local da VM.
+# Modelos no DISCO LOCAL do moltres (hostPath), nao no PVC em NFS (slowbro). Teste de 19/10 com o
+# mesmo arquivo de 6,1GB (qwen3-vl:8b-instruct), leitura direta: local ~1000 MB/s x NFS ~13 MB/s
+# (~75x). No NFS a primeira carga do modelo levava ~8 min e estourava o timeout do llama-server
+# ("timed out waiting for llama-server to start"), deixando a analise de IA sem resposta.
+# O pod ja roda so no moltres (nodeSelector da GPU), entao a dependencia do no nao muda nada.
+# /var/lib e o disco EPHEMERAL do Talos: sobrevive a reboot, mas e apagado se o no for recriado
+# (os modelos sao re-baixaveis: `ollama pull`).
+#
+# persistentVolume desligado: o volume "ollama-data" do chart vira um emptyDir inofensivo montado
+# fora do caminho (ollama.mountPath abaixo); os modelos vem do hostPath em /root/.ollama.
 persistentVolume:
-  enabled: true
-  size: 50Gi
+  enabled: false
+
+volumes:
+  - name: models-local
+    hostPath:
+      path: /var/lib/ollama-models
+      type: DirectoryOrCreate
+
+volumeMounts:
+  - name: models-local
+    mountPath: /root/.ollama
+
+# Mantem o modelo na VRAM (sem descarregar por ociosidade: a carga a frio e o gargalo) e da mais
+# tempo pra uma carga a frio terminar.
+extraEnv:
+  - name: OLLAMA_KEEP_ALIVE
+    value: "-1"
+  - name: OLLAMA_LOAD_TIMEOUT
+    value: "15m"
 
 ingress:
   enabled: true
