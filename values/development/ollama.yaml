@@ -44,10 +44,10 @@ tolerations:
 resources:
   requests:
     cpu: 1000m
-    memory: 2Gi
+    memory: 4Gi
   limits:
     cpu: 4000m
-    memory: 8Gi
+    memory: 16Gi
 
 # Modelos no DISCO LOCAL do moltres (hostPath), nao no PVC em NFS (slowbro). Teste de 19/10 com o
 # mesmo arquivo de 6,1GB (qwen3-vl:8b-instruct), leitura direta: local ~1000 MB/s x NFS ~13 MB/s
