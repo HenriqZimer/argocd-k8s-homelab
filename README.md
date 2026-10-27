@@ -26,7 +26,6 @@ apps/
   06-development/    argo-cd, gitlab-runner, k6-operator, n8n
   07-gaming/         romm, pcsx2, dolphin, xemu, eden
   08-security/       falco, kyverno, trivy-operator
-  09-backup/         minio, velero
 charts/              Charts locais que substituem os manifests com envsubst
                       do helmfile antigo (ClusterIssuer, IPAddressPool,
                       VaultStaticSecret, etc.) - values fixos, sem variavel
@@ -65,8 +64,8 @@ ordem equivalente e a annotation `argocd.argoproj.io/sync-wave` em cada
 | 2 | `hashicorp-vault` (precisa do namespace `storage` de pe) |
 | 3 | `vault-secrets-operator` (precisa do Vault rodando) + `VaultAuthGlobal` |
 | 4 | `vault-auth` (CRs `VaultAuth` por namespace, precisa do CRD do operator) |
-| 5 | Tudo que so precisa do Vault Secrets Operator: `metallb`, `cert-manager`, `proxmox-cloud-controller-manager`, `karpenter-provider-proxmox`, `kube-prometheus-stack`, `portainer`, `argo-cd`, `gitlab-runner`, `n8n`, `vaultwarden`, `romm`, `loki`, `falco`, `kyverno`, `trivy-operator`, `vpa`, `minio` |
-| 6 | `traefik` (precisa do `metallb` e do `cert-manager`), `promtail` (precisa do `loki`), `goldilocks` (precisa do `vpa`), `velero` (precisa do `minio`) |
+| 5 | Tudo que so precisa do Vault Secrets Operator: `metallb`, `cert-manager`, `proxmox-cloud-controller-manager`, `karpenter-provider-proxmox`, `kube-prometheus-stack`, `portainer`, `argo-cd`, `gitlab-runner`, `n8n`, `vaultwarden`, `romm`, `loki`, `falco`, `kyverno`, `trivy-operator`, `vpa` |
+| 6 | `traefik` (precisa do `metallb` e do `cert-manager`), `promtail` (precisa do `loki`), `goldilocks` (precisa do `vpa`) |
 
 Dentro de uma mesma `Application`, quando o secret precisa existir **antes**
 do workload subir (ex.: `proxmox-ccm`, `karpenter`, `romm`), o
@@ -109,7 +108,7 @@ aqui, sao desnecessarios no modelo continuo do GitOps.
 
 4. **Seed dos secrets de aplicacao no Vault** (mesma logica do helmfile
    antigo - Grafana, Portainer, Cloudflare/cert-manager, Proxmox, RomM,
-   Vaultwarden, MinIO, Talos worker user-data):
+   Vaultwarden, Talos worker user-data):
    ```bash
    make seed-vault-secrets
    ```

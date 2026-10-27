@@ -16,7 +16,7 @@ csiDriver:
 
 storageClasses:
   # Classe de bloco (RWO) para workloads sensiveis a latencia/IOPS:
-  # Postgres, MySQL/MariaDB, Prometheus, Loki, MinIO, Vault.
+  # Postgres, MySQL/MariaDB, Prometheus, Loki, Vault.
   # Nao e a default do cluster (essa e a NFS nfs-slowbro).
   - name: freenas-iscsi
     defaultClass: false
