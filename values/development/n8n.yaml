@@ -16,7 +16,9 @@ image:
   repository: n8nio/n8n
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "next"
+  # Tag fixa (estavel). "next" e movel + pullPolicy IfNotPresent: cada no podia
+  # ter uma versao diferente em cache, e o pod pulava entre versoes do n8n.
+  tag: "2.45.4"
 imagePullSecrets: []
 
 # The Name to use for the chart. Will be the prefix of all resources aka. The Chart.Name (default is 'n8n')
@@ -115,8 +117,12 @@ main:
       value: "https"
     N8N_EDITOR_BASE_URL:
       value: https://n8n.henriqzimer.com.br
-    WEBHOOK_URL:
+    N8N_WEBHOOK_URL:
       value: https://n8n.henriqzimer.com.br/
+    N8N_DIAGNOSTICS_ENABLED:
+      value: "false"
+    N8N_VERSION_NOTIFICATIONS_ENABLED:
+      value: "false"
     N8N_PROXY_HOPS:
       value: "1"
     N8N_SECURE_COOKIE:
@@ -293,7 +299,12 @@ main:
     # -- Service port
     port: 80
 
-  resources: {}
+  resources:
+    requests:
+      cpu: 100m
+      memory: 512Mi
+    limits:
+      memory: 1536Mi
   # We usually recommend not specifying default resources and to leave this as a conscious
   # choice for the user. This also increases chances charts run on environments with little
   # resources, such as Minikube. If you do want to specify resources, uncomment the following

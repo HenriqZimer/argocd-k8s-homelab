@@ -10,7 +10,7 @@ spec:
   sources:
     - repoURL: https://charts.chaos-mesh.org
       chart: chaos-mesh
-      targetRevision: "2.8.4"
+      targetRevision: "2.8.6"
       helm:
         valueFiles:
           - $values/values/development/chaos-mesh.yaml
