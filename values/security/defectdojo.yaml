@@ -38,6 +38,14 @@ celery:
       limits: {memory: 384Mi}
 
 initializer:
+  # O nome do Job leva um timestamp (muda a cada render) e ttlSecondsAfterFinished
+  # apaga o Job concluido: o Argo via o Job "sumir" e recriava a cada sync
+  # (OutOfSync/Progressing eterno). Como hook Sync (wave -1, antes dos Deployments)
+  # ele roda a cada sync e deixa de entrar no diff.
+  jobAnnotations:
+    argocd.argoproj.io/hook: Sync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
+    argocd.argoproj.io/sync-wave: "-1"
   resources:
     requests: {cpu: 100m, memory: 256Mi}
     limits: {memory: 768Mi}

@@ -3,6 +3,8 @@ kind: VaultAuth
 metadata:
   name: default
   namespace: {{ .Values.namespace }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "-2"
 spec:
   method: kubernetes
   mount: kubernetes
@@ -18,6 +20,8 @@ kind: VaultStaticSecret
 metadata:
   name: defectdojo-credentials-sync
   namespace: {{ .Values.namespace }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "-2"
 spec:
   vaultAuthRef: default
   type: kv-v2
@@ -45,6 +49,8 @@ kind: VaultStaticSecret
 metadata:
   name: defectdojo-valkey-sync
   namespace: {{ .Values.namespace }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "-2"
 spec:
   vaultAuthRef: default
   type: kv-v2
@@ -67,6 +73,8 @@ kind: VaultStaticSecret
 metadata:
   name: defectdojo-postgresql-sync
   namespace: {{ .Values.namespace }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "-2"
 spec:
   vaultAuthRef: default
   type: kv-v2
