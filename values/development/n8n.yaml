@@ -84,27 +84,27 @@ main:
     DB_POSTGRESDB_HOST:
       valueFrom:
         secretKeyRef:
-          name: n8n-credentials
+          name: n8n-db-credentials
           key: host
     DB_POSTGRESDB_PORT:
       valueFrom:
         secretKeyRef:
-          name: n8n-credentials
+          name: n8n-db-credentials
           key: port
     DB_POSTGRESDB_DATABASE:
       valueFrom:
         secretKeyRef:
-          name: n8n-credentials
+          name: n8n-db-credentials
           key: database
     DB_POSTGRESDB_USER:
       valueFrom:
         secretKeyRef:
-          name: n8n-credentials
+          name: n8n-db-credentials
           key: username
     DB_POSTGRESDB_PASSWORD:
       valueFrom:
         secretKeyRef:
-          name: n8n-credentials
+          name: n8n-db-credentials
           key: password
     N8N_ENCRYPTION_KEY:
       valueFrom:
