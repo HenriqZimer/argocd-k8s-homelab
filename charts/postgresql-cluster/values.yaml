@@ -26,4 +26,6 @@ cluster:
 # Exemplo:
 #   - name: vaultwarden
 #     extensions: []        # ex.: [pg_trgm]
-databases: []
+databases:
+  - name: vaultwarden
+    extensions: []
