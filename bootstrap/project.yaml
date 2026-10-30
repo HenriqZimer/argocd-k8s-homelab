@@ -41,7 +41,6 @@ spec:
     - https://aquasecurity.github.io/helm-charts/
     - https://charts.chaos-mesh.org
     - https://charts.fairwinds.com/stable
-    - https://raw.githubusercontent.com/DefectDojo/django-DefectDojo/helm-charts
     - https://democratic-csi.github.io/charts/
     - https://cloudnative-pg.github.io/charts
   destinations:

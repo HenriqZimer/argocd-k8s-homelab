@@ -1,4 +1,0 @@
-apiVersion: v2
-name: defectdojo-extras
-description: Secrets do DefectDojo (Vault) - admin/keys, Valkey e senha do banco no cluster PostgreSQL
-version: 1.0.0
