@@ -11,6 +11,12 @@ spec:
     enablePodAntiAffinity: {{ .Values.cluster.enablePodAntiAffinity }}
     podAntiAffinityType: {{ .Values.cluster.podAntiAffinityType }}
     topologyKey: {{ .Values.cluster.topologyKey }}
+    # Os unicos workers fixos sem taint sao articuno e zapdos; a 3a replica vai
+    # para o moltres (GPU, 32GB), tolerando o taint (nao usa a GPU).
+    tolerations:
+      - key: nvidia.com/gpu
+        operator: Exists
+        effect: NoSchedule
     # Fora dos nos do Karpenter (efemeros: consolidacao/expiracao derrubaria replicas)
     nodeAffinity:
       requiredDuringSchedulingIgnoredDuringExecution:
