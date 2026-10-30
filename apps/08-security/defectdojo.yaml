@@ -1,0 +1,32 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: defectdojo
+  namespace: development
+  annotations:
+    # Depois do cluster PostgreSQL (wave 3) e do VSO.
+    argocd.argoproj.io/sync-wave: "6"
+spec:
+  project: homelab
+  sources:
+    - repoURL: https://raw.githubusercontent.com/DefectDojo/django-DefectDojo/helm-charts
+      chart: defectdojo
+      targetRevision: "1.9.64"
+      helm:
+        valueFiles:
+          - $values/values/security/defectdojo.yaml
+    - repoURL: https://github.com/henriqzimer/argocd-k8s-homelab.git
+      targetRevision: main
+      ref: values
+    - repoURL: https://github.com/henriqzimer/argocd-k8s-homelab.git
+      targetRevision: main
+      path: charts/defectdojo-extras
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: security
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
