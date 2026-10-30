@@ -1,6 +1,14 @@
 # Scan continuo de vulnerabilidade nas imagens rodando no cluster.
 trivy:
   ignoreUnfixed: true
+  # Scan de imagens grandes estourava o limite padrao (500M) e morria OOMKilled.
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256M
+    limits:
+      cpu: 500m
+      memory: 1Gi
 
 operator:
   replicas: 1
