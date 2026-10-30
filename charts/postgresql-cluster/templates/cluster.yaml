@@ -22,6 +22,9 @@ spec:
       - name: {{ .name }}
         ensure: present
         login: true
+        # defaults que o webhook do CNPG preenche; explicitos para o Argo nao ver diff
+        inherit: true
+        connectionLimit: -1
         passwordSecret:
           name: postgresql-{{ .name }}-credentials
       {{- end }}
