@@ -48,6 +48,12 @@ driver:
 # talos_system_extensions).
 node:
   hostPID: true
+  # moltres (GPU) tem taint nvidia.com/gpu; sem tolerar, o node plugin nao sobe
+  # la e nenhum pod com PVC iSCSI consegue montar volume nesse no.
+  tolerations:
+    - key: nvidia.com/gpu
+      operator: Exists
+      effect: NoSchedule
   driver:
     extraEnv:
       - name: ISCSIADM_HOST_STRATEGY
