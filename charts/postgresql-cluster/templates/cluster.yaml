@@ -7,8 +7,8 @@ spec:
   instances: {{ .Values.cluster.instances }}
   imageName: {{ .Values.cluster.imageName }}
   imagePullPolicy: {{ .Values.cluster.imagePullPolicy }}
-  enablePodAntiAffinity: {{ .Values.cluster.enablePodAntiAffinity }}
   affinity:
+    enablePodAntiAffinity: {{ .Values.cluster.enablePodAntiAffinity }}
     podAntiAffinityType: {{ .Values.cluster.podAntiAffinityType }}
     topologyKey: {{ .Values.cluster.topologyKey }}
     # Fora dos nos do Karpenter (efemeros: consolidacao/expiracao derrubaria replicas)
