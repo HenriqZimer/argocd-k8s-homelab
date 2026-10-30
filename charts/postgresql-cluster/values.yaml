@@ -51,3 +51,5 @@ databases:
     extensions: []
   - name: avisa_prod
     extensions: []
+  - name: defectdojo
+    extensions: []
