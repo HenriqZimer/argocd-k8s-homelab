@@ -80,6 +80,10 @@ csiProxy:
 
 node:
   hostPID: true
+  cleanup:
+    resources:
+      requests: {cpu: 5m, memory: 8Mi}
+      limits: {memory: 64Mi}
   driverRegistrar:
     resources:
       requests: {cpu: 10m, memory: 16Mi}

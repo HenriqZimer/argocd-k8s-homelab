@@ -15,6 +15,7 @@ spec:
       helm:
         valueFiles:
           - $values/values/security/defectdojo.yaml
+          - $values/values/security/defectdojo-resources.yaml
     - repoURL: https://github.com/henriqzimer/argocd-k8s-homelab.git
       targetRevision: main
       ref: values

@@ -1,0 +1,61 @@
+# Overlay de recursos (requests/limits de memoria). Base: values/monitoring/kube-prometheus-stack.yaml
+# Medido em 2026-10-30 com `kubectl top` + recomendacoes do VPA/Goldilocks: request ~ uso
+# observado, limit com folga (2-4x). Sem limite, um vazamento derruba o no inteiro.
+prometheus:
+  prometheusSpec:
+    resources:
+      requests:
+        cpu: 200m
+        memory: 768Mi
+      limits:
+        memory: 2560Mi
+alertmanager:
+  alertmanagerSpec:
+    resources:
+      requests:
+        cpu: 10m
+        memory: 48Mi
+      limits:
+        memory: 256Mi
+prometheusOperator:
+  resources:
+    requests:
+      cpu: 10m
+      memory: 64Mi
+    limits:
+      memory: 256Mi
+  prometheusConfigReloader:
+    resources:
+      requests:
+        cpu: 10m
+        memory: 16Mi
+      limits:
+        memory: 64Mi
+grafana:
+  resources:
+    requests:
+      cpu: 50m
+      memory: 384Mi
+    limits:
+      memory: 1536Mi
+  sidecar:
+    resources:
+      requests:
+        cpu: 10m
+        memory: 96Mi
+      limits:
+        memory: 256Mi
+kube-state-metrics:
+  resources:
+    requests:
+      cpu: 10m
+      memory: 128Mi
+    limits:
+      memory: 384Mi
+prometheus-node-exporter:
+  resources:
+    requests:
+      cpu: 10m
+      memory: 32Mi
+    limits:
+      memory: 128Mi

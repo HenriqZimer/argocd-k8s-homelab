@@ -1,0 +1,23 @@
+# Overlay de recursos (requests/limits de memoria). Base: values/networking/cert-manager.yaml
+# Medido em 2026-10-30 com `kubectl top` + recomendacoes do VPA/Goldilocks: request ~ uso
+# observado, limit com folga (2-4x). Sem limite, um vazamento derruba o no inteiro.
+resources:
+  requests:
+    cpu: 10m
+    memory: 64Mi
+  limits:
+    memory: 256Mi
+cainjector:
+  resources:
+    requests:
+      cpu: 10m
+      memory: 96Mi
+    limits:
+      memory: 384Mi
+webhook:
+  resources:
+    requests:
+      cpu: 10m
+      memory: 32Mi
+    limits:
+      memory: 128Mi

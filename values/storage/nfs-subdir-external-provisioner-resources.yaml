@@ -1,0 +1,9 @@
+# Overlay de recursos (requests/limits de memoria). Base: values/storage/nfs-subdir-external-provisioner.yaml
+# Medido em 2026-10-30 com `kubectl top` + recomendacoes do VPA/Goldilocks: request ~ uso
+# observado, limit com folga (2-4x). Sem limite, um vazamento derruba o no inteiro.
+resources:
+  requests:
+    cpu: 10m
+    memory: 32Mi
+  limits:
+    memory: 128Mi

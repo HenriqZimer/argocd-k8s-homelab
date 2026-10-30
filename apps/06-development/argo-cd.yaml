@@ -21,6 +21,7 @@ spec:
         releaseName: argocd-bootstrap
         valueFiles:
           - $values/values/development/argo-cd.yaml
+          - $values/values/development/argo-cd-resources.yaml
     - repoURL: https://github.com/henriqzimer/argocd-k8s-homelab.git
       targetRevision: main
       ref: values

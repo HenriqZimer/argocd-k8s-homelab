@@ -1,0 +1,17 @@
+# Overlay de recursos (requests/limits de memoria). Base: values/monitoring/loki.yaml
+# Medido em 2026-10-30 com `kubectl top` + recomendacoes do VPA/Goldilocks: request ~ uso
+# observado, limit com folga (2-4x). Sem limite, um vazamento derruba o no inteiro.
+sidecar:
+  resources:
+    requests:
+      cpu: 10m
+      memory: 96Mi
+    limits:
+      memory: 256Mi
+gateway:
+  resources:
+    requests:
+      cpu: 10m
+      memory: 16Mi
+    limits:
+      memory: 128Mi

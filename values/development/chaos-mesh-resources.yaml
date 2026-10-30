@@ -1,0 +1,14 @@
+# Overlay de recursos (requests/limits de memoria). Base: values/development/chaos-mesh.yaml
+# Medido em 2026-10-30 com `kubectl top` + recomendacoes do VPA/Goldilocks: request ~ uso
+# observado, limit com folga (2-4x). Sem limite, um vazamento derruba o no inteiro.
+controllerManager:
+  resources:
+    limits:
+      memory: 384Mi
+chaosDaemon:
+  resources:
+    requests:
+      cpu: 10m
+      memory: 64Mi
+    limits:
+      memory: 256Mi

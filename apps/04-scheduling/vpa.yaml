@@ -14,6 +14,7 @@ spec:
       helm:
         valueFiles:
           - $values/values/scheduling/vpa.yaml
+          - $values/values/scheduling/vpa-resources.yaml
     - repoURL: https://github.com/henriqzimer/argocd-k8s-homelab.git
       targetRevision: main
       ref: values

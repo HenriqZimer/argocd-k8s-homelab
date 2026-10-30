@@ -1,0 +1,45 @@
+# Overlay de recursos (requests/limits de memoria). Base: values/development/argo-cd.yaml
+# Medido em 2026-10-30 com `kubectl top` + recomendacoes do VPA/Goldilocks: request ~ uso
+# observado, limit com folga (2-4x). Sem limite, um vazamento derruba o no inteiro.
+controller:
+  resources:
+    requests:
+      cpu: 100m
+      memory: 768Mi
+    limits:
+      memory: 2Gi
+server:
+  resources:
+    requests:
+      cpu: 20m
+      memory: 64Mi
+    limits:
+      memory: 384Mi
+dex:
+  resources:
+    requests:
+      cpu: 10m
+      memory: 32Mi
+    limits:
+      memory: 192Mi
+redis:
+  resources:
+    requests:
+      cpu: 10m
+      memory: 32Mi
+    limits:
+      memory: 192Mi
+notifications:
+  resources:
+    requests:
+      cpu: 10m
+      memory: 48Mi
+    limits:
+      memory: 192Mi
+applicationSet:
+  resources:
+    requests:
+      cpu: 10m
+      memory: 48Mi
+    limits:
+      memory: 256Mi
