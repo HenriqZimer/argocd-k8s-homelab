@@ -6,6 +6,12 @@ operator:
   replicas: 1
   # Reduz a carga do scan inicial num homelab pequeno.
   scanJobsConcurrentLimit: 2
+  # Infra assessment / compliance (CIS) usam o node-collector, que monta
+  # /etc/systemd, /etc/kubernetes etc. do host. No Talos o rootfs e read-only e
+  # esses caminhos nao existem: o pod fica em CreateContainerError para sempre.
+  # Scan de vulnerabilidade, config audit, RBAC e secrets continuam ligados.
+  infraAssessmentScannerEnabled: false
+  clusterComplianceEnabled: false
 
 serviceMonitor:
   enabled: true
