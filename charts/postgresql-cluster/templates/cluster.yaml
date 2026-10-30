@@ -7,6 +7,17 @@ spec:
   instances: {{ .Values.cluster.instances }}
   imageName: {{ .Values.cluster.imageName }}
   imagePullPolicy: {{ .Values.cluster.imagePullPolicy }}
+  enablePodAntiAffinity: {{ .Values.cluster.enablePodAntiAffinity }}
+  affinity:
+    podAntiAffinityType: {{ .Values.cluster.podAntiAffinityType }}
+    topologyKey: {{ .Values.cluster.topologyKey }}
+    # Fora dos nos do Karpenter (efemeros: consolidacao/expiracao derrubaria replicas)
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: karpenter.sh/nodepool
+                operator: DoesNotExist
   storage:
     storageClass: {{ .Values.cluster.storage.storageClass }}
     size: {{ .Values.cluster.storage.size }}
