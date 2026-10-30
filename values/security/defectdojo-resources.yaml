@@ -1,6 +1,8 @@
 # Overlay de recursos (requests/limits de memoria). Base: values/security/defectdojo.yaml
 # Medido em 2026-10-30 com `kubectl top` + recomendacoes do VPA/Goldilocks: request ~ uso
 # observado, limit com folga (2-4x). Sem limite, um vazamento derruba o no inteiro.
+# Tolera o taint de GPU: o moltres (32GB, ~22% de requests) tem folga; zapdos/articuno estao
+# com 60-97% de memoria em requests. Nao usa a GPU.
 valkey:
   resources:
     requests:
@@ -8,3 +10,16 @@ valkey:
       memory: 64Mi
     limits:
       memory: 256Mi
+  tolerations: &id001
+  - key: nvidia.com/gpu
+    operator: Exists
+    effect: NoSchedule
+django:
+  tolerations: *id001
+celery:
+  worker:
+    tolerations: *id001
+  beat:
+    tolerations: *id001
+initializer:
+  tolerations: *id001

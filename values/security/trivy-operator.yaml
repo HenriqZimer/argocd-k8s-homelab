@@ -31,6 +31,6 @@ serviceMonitor:
 resources:
   requests:
     cpu: 50m
-    memory: 512Mi
+    memory: 384Mi
   limits:
     memory: 1Gi
