@@ -26,6 +26,7 @@ cluster:
 
 # Um banco + um usuario por servico. Para cada item:
 #   1. grave a senha no Vault: k8s-homelab/postgresql/<name> com a chave "password"
+#      (nomes com "_" viram "-" nos recursos do Kubernetes)
 #   2. adicione o item aqui e faca o commit
 # Exemplo:
 #   - name: vaultwarden
@@ -36,4 +37,17 @@ databases:
   - name: grafana
     extensions: []
   - name: romm
+    extensions: []
+  - name: n8n
+    extensions: []
+  # Backend de storage do proprio Vault: a senha NAO vem do Vault (dependencia
+  # circular). O Secret postgresql-vault-credentials e criado a mao (kubectl).
+  - name: vault
+    extensions: []
+    vaultSecret: false
+  - name: avisa_dev
+    extensions: []
+  - name: avisa_staging
+    extensions: []
+  - name: avisa_prod
     extensions: []
