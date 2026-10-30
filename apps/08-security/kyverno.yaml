@@ -20,6 +20,13 @@ spec:
   destination:
     server: https://kubernetes.default.svc
     namespace: security
+  # O chart renderiza "labels: {}" nas CRDs de policies.kyverno.io; o API server
+  # descarta o mapa vazio, entao o Argo via diff eterno (OutOfSync) so por isso.
+  ignoreDifferences:
+    - group: apiextensions.k8s.io
+      kind: CustomResourceDefinition
+      jqPathExpressions:
+        - .metadata.labels | select(. == {})
   syncPolicy:
     automated:
       prune: true
