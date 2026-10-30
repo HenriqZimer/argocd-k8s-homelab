@@ -1,0 +1,52 @@
+# democratic-csi - segunda instancia (pool SSD "fastbro" no TrueNAS)
+# Mesmo driver freenas-api-iscsi e mesma API key, mas datasets em
+# fastbro/kubernetes/{vols,snapshots}. Para Postgres e outros workloads que
+# fazem fsync (o pool slowbro, RAIDZ1 em HDD, mede 50ms a 2s por fsync).
+# Config do driver: Secret democratic-csi-fast-driver-config (charts/democratic-csi-extras).
+#
+# StorageClass gerada: "freenas-iscsi-fast" (RWO, Retain, nao-default).
+
+csiDriver:
+  name: "org.democratic-csi.iscsi-fast"
+
+storageClasses:
+  - name: freenas-iscsi-fast
+    defaultClass: false
+    reclaimPolicy: Retain
+    volumeBindingMode: Immediate
+    allowVolumeExpansion: true
+    parameters:
+      fsType: ext4
+    mountOptions: []
+    secrets:
+      provisioner-secret:
+      controller-publish-secret:
+      node-stage-secret:
+      node-publish-secret:
+      controller-expand-secret:
+
+driver:
+  existingConfigSecret: democratic-csi-fast-driver-config
+  config:
+    driver: freenas-api-iscsi # o chart so le o nome do driver daqui
+
+node:
+  hostPID: true
+  # moltres (GPU) tem taint nvidia.com/gpu; sem tolerar, o node plugin nao sobe
+  # la e nenhum pod com PVC iSCSI consegue montar volume nesse no.
+  tolerations:
+    - key: nvidia.com/gpu
+      operator: Exists
+      effect: NoSchedule
+  driver:
+    extraEnv:
+      - name: ISCSIADM_HOST_STRATEGY
+        value: nsenter
+      - name: ISCSIADM_HOST_PATH
+        value: /usr/local/sbin/iscsiadm
+    # No Talos 1.13 + iscsi-tools o diretorio do host e /etc/iscsi (existe, com
+    # initiatorname.iscsi); /usr/local/etc/iscsi nao existe e o rootfs e RO.
+    # Type "" (sem checagem): o kubelet do Talos roda em outro mount namespace
+    # e nao enxerga /etc/iscsi ("is not a directory" com type Directory).
+    iscsiDirHostPath: /etc/iscsi
+    iscsiDirHostPathType: ""

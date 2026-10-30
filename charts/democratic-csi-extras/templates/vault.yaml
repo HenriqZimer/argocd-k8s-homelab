@@ -30,3 +30,30 @@ spec:
         driver-config-file.yaml:
           text: |
             {{- toYaml .Values.config | replace "__API_KEY__" "{{ get .Secrets \"api_key\" }}" | nindent 12 }}
+{{- if .Values.fast.enabled }}
+{{- $fast := deepCopy .Values.config }}
+{{- $_ := set $fast.zfs "datasetParentName" .Values.fast.datasetParentName }}
+{{- $_ := set $fast.zfs "detachedSnapshotsDatasetParentName" .Values.fast.detachedSnapshotsDatasetParentName }}
+{{- $_ := set $fast.iscsi "nameSuffix" .Values.fast.nameSuffix }}
+---
+apiVersion: secrets.hashicorp.com/v1beta1
+kind: VaultStaticSecret
+metadata:
+  name: democratic-csi-fast-driver-config-sync
+  namespace: {{ .Values.namespace }}
+spec:
+  vaultAuthRef: default
+  type: kv-v2
+  mount: k8s-homelab
+  path: truenas-api
+  refreshAfter: 1m
+  destination:
+    name: democratic-csi-fast-driver-config
+    create: true
+    type: Opaque
+    transformation:
+      templates:
+        driver-config-file.yaml:
+          text: |
+            {{- toYaml $fast | replace "__API_KEY__" "{{ get .Secrets \"api_key\" }}" | nindent 12 }}
+{{- end }}

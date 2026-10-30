@@ -41,3 +41,12 @@ config:
     extentBlocksize: 512
     extentRpm: "SSD"
     extentAvailThreshold: 0
+
+# Segunda instancia do driver, no pool SSD "fastbro" (sde, 100GB). Usa a mesma
+# API key; so mudam os datasets e o sufixo do IQN. Releases do democratic-csi
+# diferentes precisam de csiDriver.name proprio (ver democratic-csi-fast.yaml).
+fast:
+  enabled: true
+  datasetParentName: fastbro/kubernetes/vols
+  detachedSnapshotsDatasetParentName: fastbro/kubernetes/snapshots
+  nameSuffix: "-fast"
