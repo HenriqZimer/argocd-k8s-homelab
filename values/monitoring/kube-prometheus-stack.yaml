@@ -1405,6 +1405,14 @@ grafana:
   ## Load environment variables from the credentials secret.
   envFromSecret: grafana-credentials
 
+  # URL do banco (cluster PostgreSQL compartilhado) vem de outro Secret,
+  # gerado de k8s-homelab/postgresql/grafana por charts/kube-prometheus-stack-extras.
+  envValueFrom:
+    GF_DATABASE_URL:
+      secretKeyRef:
+        name: grafana-db-credentials
+        key: GF_DATABASE_URL
+
   grafana.ini:
     database:
       type: postgres
