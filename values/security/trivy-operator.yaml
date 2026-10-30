@@ -26,3 +26,11 @@ serviceMonitor:
   # Necessário para o Prometheus do kube-prometheus-stack descobrir este ServiceMonitor.
   labels:
     release: kube-prometheus-stack
+
+# Pod do operator: usa ~430-700Mi (VPA alvo 684Mi); sem limite antes.
+resources:
+  requests:
+    cpu: 50m
+    memory: 512Mi
+  limits:
+    memory: 1Gi

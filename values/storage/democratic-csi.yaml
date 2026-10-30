@@ -46,8 +46,44 @@ driver:
 # namespace do host (nsenter) e usa o iscsiadm da extension siderolabs/iscsi-tools.
 # Requer a extension instalada nos workers (terraform-homelab, var
 # talos_system_extensions).
+# Imagem fixada pelo digest do build que ja roda (era "latest", tag movel). O
+# digest 944d0e65... esta ACIMA de v1.9.5 (ultima release publicada); trocar
+# para a tag v1.9.5 seria downgrade. Atualizar so de proposito, mudando o digest.
+controller:
+  driver:
+    image:
+      tag: "latest@sha256:944d0e65077efbd9c1fdf23997eec8fac4b4bfb7c3de400f63e33a0a849c5ced"
+    resources:
+      requests: {cpu: 20m, memory: 64Mi}
+      limits: {memory: 512Mi}
+  externalAttacher:
+    resources:
+      requests: {cpu: 10m, memory: 32Mi}
+      limits: {memory: 256Mi}
+  externalProvisioner:
+    resources:
+      requests: {cpu: 10m, memory: 32Mi}
+      limits: {memory: 256Mi}
+  externalResizer:
+    resources:
+      requests: {cpu: 10m, memory: 32Mi}
+      limits: {memory: 256Mi}
+  externalSnapshotter:
+    resources:
+      requests: {cpu: 10m, memory: 32Mi}
+      limits: {memory: 256Mi}
+
+csiProxy:
+  resources:
+    requests: {cpu: 10m, memory: 16Mi}
+    limits: {memory: 128Mi}
+
 node:
   hostPID: true
+  driverRegistrar:
+    resources:
+      requests: {cpu: 10m, memory: 16Mi}
+      limits: {memory: 128Mi}
   # moltres (GPU) tem taint nvidia.com/gpu; sem tolerar, o node plugin nao sobe
   # la e nenhum pod com PVC iSCSI consegue montar volume nesse no.
   tolerations:
@@ -55,6 +91,11 @@ node:
       operator: Exists
       effect: NoSchedule
   driver:
+    image:
+      tag: "latest@sha256:944d0e65077efbd9c1fdf23997eec8fac4b4bfb7c3de400f63e33a0a849c5ced"
+    resources:
+      requests: {cpu: 20m, memory: 64Mi}
+      limits: {memory: 512Mi}
     extraEnv:
       - name: ISCSIADM_HOST_STRATEGY
         value: nsenter

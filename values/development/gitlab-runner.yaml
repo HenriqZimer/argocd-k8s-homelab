@@ -685,10 +685,12 @@ podSecurityContext:
 ## Configure resource requests and limits
 ## ref: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
 ##
+# Pod do runner (so o gerenciador; os jobs rodam em pods proprios). Usa ~100Mi;
+# o limite de 8Gi sozinho causava 234% de overcommit de memoria no zapdos.
 resources:
   limits:
-    memory: 8Gi
-    cpu: 4
+    memory: 512Mi
+    cpu: 1
     ephemeral-storage: 2Gi
   requests:
     memory: 128Mi

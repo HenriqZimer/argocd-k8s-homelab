@@ -3,6 +3,11 @@
 recommender:
   enabled: true
   replicaCount: 1
+  extraArgs:
+    # Padrao 1m: com ~100 VPAs (Goldilocks liga em todos os namespaces) o
+    # recommender gerava ~50k escritas em 5h no kube-apiserver (status + checkpoints).
+    # So recomendacao (nada e redimensionado), entao 5m e suficiente.
+    recommender-interval: 5m0s
 
 updater:
   enabled: false
