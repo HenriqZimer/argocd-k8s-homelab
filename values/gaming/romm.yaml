@@ -65,6 +65,9 @@ secrets:
 
 # -- RomM application configuration
 romm:
+  # Banco no cluster PostgreSQL compartilhado (ver mariadb.externalDatabase abaixo)
+  dbDriver: postgresql
+
   # -- Container image configuration
   image:
     # -- Container image repository for RomM.
@@ -164,7 +167,7 @@ romm:
   # -- Valores nao-sensiveis (senhas/keys ficam no Secret romm-credentials via envFrom)
   env:
     - name: DB_PORT
-      value: "3306"
+      value: "5432"
     - name: DB_USER
       value: "romm"
     - name: DB_NAME
@@ -177,6 +180,8 @@ romm:
   envFrom:
     - secretRef:
         name: romm-credentials
+    - secretRef:
+        name: romm-db-credentials
     - secretRef:
         name: streaming-broker-secret
 
@@ -278,7 +283,7 @@ mariadb:
   enabled: false
 
   externalDatabase:
-    host: "192.168.1.105"
+    host: "postgresql-rw.postgresql.svc.cluster.local"
 
 # -- Nao configurado explicitamente: o chart (desde 1.4.0) passou a exigir
 # Redis/Valkey (tarefas agendadas, watcher, sessao) e nao vinha com nada -

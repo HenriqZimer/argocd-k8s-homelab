@@ -33,3 +33,7 @@ cluster:
 databases:
   - name: vaultwarden
     extensions: []
+  - name: grafana
+    extensions: []
+  - name: romm
+    extensions: []
