@@ -5,6 +5,10 @@
 
 host: defectdojo.henriqzimer.com.br
 siteUrl: "https://defectdojo.henriqzimer.com.br"
+# O CronJob de import fala com o Service interno (ALLOWED_HOSTS do Django)
+alternativeHosts:
+  - defectdojo-django
+  - defectdojo-django.security.svc.cluster.local
 imagePullPolicy: IfNotPresent
 
 createSecret: false

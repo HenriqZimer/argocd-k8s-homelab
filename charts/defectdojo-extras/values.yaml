@@ -1,1 +1,7 @@
 namespace: security
+
+# CronJob que alimenta o DefectDojo com os VulnerabilityReports do trivy-operator.
+trivyImport:
+  enabled: true
+  schedule: "30 3 * * *"
+  image: alpine/k8s:1.36.5

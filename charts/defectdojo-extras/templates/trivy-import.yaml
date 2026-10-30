@@ -1,0 +1,109 @@
+{{- if .Values.trivyImport.enabled }}
+# Envia os VulnerabilityReports do trivy-operator ao DefectDojo (reimport-scan:
+# cria o teste na primeira vez e depois so atualiza/fecha findings). O importador
+# "Trivy Operator Scan" aceita UM relatorio por arquivo (um `kubectl get ... -o json`
+# com kind List volta 0 findings), por isso o loop por relatorio.
+# Autentica com o admin do proprio DefectDojo (Secret "defectdojo").
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: defectdojo-trivy-import
+  namespace: {{ .Values.namespace }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: defectdojo-trivy-import
+rules:
+  - apiGroups: ["aquasecurity.github.io"]
+    resources: ["vulnerabilityreports"]
+    verbs: ["get", "list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: defectdojo-trivy-import
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: defectdojo-trivy-import
+subjects:
+  - kind: ServiceAccount
+    name: defectdojo-trivy-import
+    namespace: {{ .Values.namespace }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: defectdojo-trivy-import
+  namespace: {{ .Values.namespace }}
+data:
+  import.sh: |
+    #!/bin/sh
+    set -eu
+    DD="${DD_URL:-http://defectdojo-django.security.svc.cluster.local}"
+    TOKEN="$(curl -fsS -m 30 -X POST "$DD/api/v2/api-token-auth/" \
+      -H 'Content-Type: application/json' \
+      -d "{\"username\":\"admin\",\"password\":\"$DD_ADMIN_PASSWORD\"}" | jq -r .token)"
+    [ -n "$TOKEN" ] && [ "$TOKEN" != null ] || { echo "falha ao obter token" >&2; exit 1; }
+    kubectl get vulnerabilityreports -A -o json > /tmp/all.json
+    n=0; ok=0; fail=0
+    for i in $(seq 0 $(( $(jq '.items | length' /tmp/all.json) - 1 ))); do
+      jq ".items[$i]" /tmp/all.json > /tmp/one.json
+      title="$(jq -r '.metadata.namespace + "/" + .metadata.name' /tmp/one.json)"
+      [ "$(jq '.report.vulnerabilities | length' /tmp/one.json)" -gt 0 ] || { n=$((n+1)); continue; }
+      code="$(curl -sS -m 120 -o /tmp/resp.json -w '%{http_code}' -X POST "$DD/api/v2/reimport-scan/" \
+        -H "Authorization: Token $TOKEN" \
+        -F scan_type='Trivy Operator Scan' -F product_type_name=Kubernetes \
+        -F product_name="${PRODUCT:-homelab-k8s}" -F engagement_name="${ENGAGEMENT:-trivy-operator}" \
+        -F test_title="$title" -F auto_create_context=true -F close_old_findings=true \
+        -F active=true -F verified=false -F minimum_severity=Info -F file=@/tmp/one.json || echo 000)"
+      n=$((n+1))
+      if [ "$code" = 200 ] || [ "$code" = 201 ]; then ok=$((ok+1)); else fail=$((fail+1)); echo "ERRO $code em $title: $(head -c 200 /tmp/resp.json)" >&2; fi
+    done
+    echo "relatorios=$n enviados=$ok falhas=$fail"
+    [ "$fail" -eq 0 ]
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: defectdojo-trivy-import
+  namespace: {{ .Values.namespace }}
+spec:
+  schedule: {{ .Values.trivyImport.schedule | quote }}
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 2
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      activeDeadlineSeconds: 1800
+      template:
+        spec:
+          restartPolicy: Never
+          serviceAccountName: defectdojo-trivy-import
+          tolerations:
+            - key: nvidia.com/gpu
+              operator: Exists
+              effect: NoSchedule
+          containers:
+            - name: import
+              image: {{ .Values.trivyImport.image }}
+              command: ["/bin/sh", "/scripts/import.sh"]
+              env:
+                - name: DD_ADMIN_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: defectdojo
+                      key: DD_ADMIN_PASSWORD
+              resources:
+                requests: {cpu: 50m, memory: 128Mi}
+                limits: {memory: 512Mi}
+              volumeMounts:
+                - name: scripts
+                  mountPath: /scripts
+          volumes:
+            - name: scripts
+              configMap:
+                name: defectdojo-trivy-import
+{{- end }}
