@@ -1,6 +1,8 @@
 # Overlay de recursos (requests/limits de memoria). Base: values/development/argo-cd.yaml
 # Medido em 2026-10-30 com `kubectl top` + recomendacoes do VPA/Goldilocks: request ~ uso
 # observado, limit com folga (2-4x). Sem limite, um vazamento derruba o no inteiro.
+# zapdos (8GB) chegou a 87% de requests e o OOM controller do Talos matava pods; o moltres
+# (32GB) tem folga. Tolera o taint de GPU (nao usa a GPU) e prefere o moltres.
 controller:
   resources:
     requests:
@@ -8,6 +10,20 @@ controller:
       memory: 768Mi
     limits:
       memory: 2Gi
+  tolerations:
+  - key: nvidia.com/gpu
+    operator: Exists
+    effect: NoSchedule
+  affinity:
+    nodeAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        preference:
+          matchExpressions:
+          - key: kubernetes.io/hostname
+            operator: In
+            values:
+            - moltres
 server:
   resources:
     requests:

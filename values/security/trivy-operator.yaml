@@ -34,3 +34,19 @@ resources:
     memory: 384Mi
   limits:
     memory: 1Gi
+
+# zapdos (8GB) chegou a 87% de requests e o OOM controller do Talos matava pods; o moltres
+# (32GB) tem folga. Tolera o taint de GPU (nao usa a GPU) e prefere o moltres.
+tolerations:
+  - key: nvidia.com/gpu
+    operator: Exists
+    effect: NoSchedule
+affinity:
+  nodeAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        preference:
+          matchExpressions:
+            - key: kubernetes.io/hostname
+              operator: In
+              values: [moltres]
