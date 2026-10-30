@@ -54,5 +54,7 @@ node:
         value: nsenter
       - name: ISCSIADM_HOST_PATH
         value: /usr/local/sbin/iscsiadm
-    iscsiDirHostPath: /usr/local/etc/iscsi
-    iscsiDirHostPathType: ""
+    # No Talos 1.13 + iscsi-tools o diretorio do host e /etc/iscsi (existe, com
+    # initiatorname.iscsi); /usr/local/etc/iscsi nao existe e o rootfs e RO.
+    iscsiDirHostPath: /etc/iscsi
+    iscsiDirHostPathType: Directory
