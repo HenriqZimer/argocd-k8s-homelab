@@ -39,7 +39,7 @@ databases:
   - name: romm
     extensions: []
   - name: n8n
-    extensions: []
+    extensions: ["uuid-ossp"]
   # Backend de storage do proprio Vault: a senha NAO vem do Vault (dependencia
   # circular). O Secret postgresql-vault-credentials e criado a mao (kubectl).
   - name: vault
