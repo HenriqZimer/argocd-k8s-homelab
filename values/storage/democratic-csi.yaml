@@ -56,5 +56,7 @@ node:
         value: /usr/local/sbin/iscsiadm
     # No Talos 1.13 + iscsi-tools o diretorio do host e /etc/iscsi (existe, com
     # initiatorname.iscsi); /usr/local/etc/iscsi nao existe e o rootfs e RO.
+    # Type "" (sem checagem): o kubelet do Talos roda em outro mount namespace
+    # e nao enxerga /etc/iscsi ("is not a directory" com type Directory).
     iscsiDirHostPath: /etc/iscsi
-    iscsiDirHostPathType: Directory
+    iscsiDirHostPathType: ""
