@@ -1,0 +1,29 @@
+namespace: postgresql
+
+cluster:
+  name: postgresql
+  instances: 1
+  # Tag de minor fixa. Subir de major (17 -> 18) so com pg_dump/restore ou
+  # pg_upgrade planejado; subir de minor e so trocar a tag.
+  imageName: ghcr.io/cloudnative-pg/postgresql:17.11-standard-trixie
+  imagePullPolicy: IfNotPresent
+  storage:
+    storageClass: freenas-iscsi
+    size: 10Gi
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      memory: 512Mi
+  parameters:
+    max_connections: "100"
+    shared_buffers: 128MB
+
+# Um banco + um usuario por servico. Para cada item:
+#   1. grave a senha no Vault: k8s-homelab/postgresql/<name> com a chave "password"
+#   2. adicione o item aqui e faca o commit
+# Exemplo:
+#   - name: vaultwarden
+#     extensions: []        # ex.: [pg_trgm]
+databases: []

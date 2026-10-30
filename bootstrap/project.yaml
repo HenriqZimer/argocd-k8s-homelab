@@ -41,6 +41,8 @@ spec:
     - https://aquasecurity.github.io/helm-charts/
     - https://charts.chaos-mesh.org
     - https://charts.fairwinds.com/stable
+    - https://democratic-csi.github.io/charts/
+    - https://cloudnative-pg.github.io/charts
   destinations:
     - namespace: "*"
       server: https://kubernetes.default.svc

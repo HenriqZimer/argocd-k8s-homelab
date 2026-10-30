@@ -1,0 +1,4 @@
+apiVersion: v2
+name: democratic-csi-extras
+description: Config do driver democratic-csi (API key do TrueNAS via Vault)
+version: 1.0.0

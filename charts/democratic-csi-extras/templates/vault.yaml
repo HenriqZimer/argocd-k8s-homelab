@@ -1,0 +1,32 @@
+apiVersion: secrets.hashicorp.com/v1beta1
+kind: VaultAuth
+metadata:
+  name: default
+  namespace: {{ .Values.namespace }}
+spec:
+  method: kubernetes
+  mount: kubernetes
+  kubernetes:
+    role: role-k8s-homelab
+    serviceAccount: default
+---
+apiVersion: secrets.hashicorp.com/v1beta1
+kind: VaultStaticSecret
+metadata:
+  name: democratic-csi-driver-config-sync
+  namespace: {{ .Values.namespace }}
+spec:
+  vaultAuthRef: default
+  type: kv-v2
+  mount: k8s-homelab
+  path: truenas-api
+  refreshAfter: 1m
+  destination:
+    name: democratic-csi-driver-config
+    create: true
+    type: Opaque
+    transformation:
+      templates:
+        driver-config-file.yaml:
+          text: |
+            {{- toYaml .Values.config | replace "__API_KEY__" "{{ get .Secrets \"api_key\" }}" | nindent 12 }}

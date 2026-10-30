@@ -1,0 +1,4 @@
+apiVersion: v2
+name: postgresql-cluster
+description: Cluster PostgreSQL compartilhado (CloudNativePG) com bancos/usuarios por servico
+version: 1.0.0

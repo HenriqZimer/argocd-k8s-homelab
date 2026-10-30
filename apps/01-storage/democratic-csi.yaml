@@ -17,6 +17,9 @@ spec:
     - repoURL: https://github.com/henriqzimer/argocd-k8s-homelab.git
       targetRevision: main
       ref: values
+    - repoURL: https://github.com/henriqzimer/argocd-k8s-homelab.git
+      targetRevision: main
+      path: charts/democratic-csi-extras
   destination:
     server: https://kubernetes.default.svc
     namespace: storage
@@ -24,5 +27,9 @@ spec:
     automated:
       prune: true
       selfHeal: true
+    managedNamespaceMetadata:
+      labels:
+        # Controller/node do CSI sao privilegiados (hostPID, mounts do host)
+        pod-security.kubernetes.io/enforce: privileged
     syncOptions:
       - CreateNamespace=true

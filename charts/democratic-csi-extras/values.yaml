@@ -1,0 +1,41 @@
+namespace: storage
+
+# Conteudo de driver-config-file.yaml do democratic-csi.
+# __API_KEY__ e trocado pelo valor do Vault (k8s-homelab/truenas-api, api_key).
+config:
+  driver: freenas-api-iscsi
+  instance_id:
+  httpConnection:
+    protocol: http
+    host: 192.168.1.102
+    port: 80
+    apiKey: __API_KEY__
+    allowInsecure: true
+    apiVersion: 2
+  zfs:
+    # datasetParentName e detachedSnapshotsDatasetParentName sao irmaos
+    # sob slowbro/kubernetes (um nao pode ser filho do outro).
+    datasetParentName: slowbro/kubernetes/vols
+    detachedSnapshotsDatasetParentName: slowbro/kubernetes/snapshots
+    zvolCompression:
+    zvolDedup:
+    zvolEnableReservation: false
+    zvolBlocksize:
+  iscsi:
+    targetPortal: "192.168.1.102:3260"
+    targetPortals: []
+    namePrefix: csi-
+    nameSuffix: "-homelab"
+    # targetGroupPortalGroup / targetGroupInitiatorGroup: IDs dos grupos
+    # de portal e initiator ja criados no TrueNAS (Sharing -> iSCSI).
+    targetGroups:
+      - targetGroupPortalGroup: 1
+        targetGroupInitiatorGroup: 1
+        targetGroupAuthType: None
+        targetGroupAuthGroup:
+    extentInsecureTpc: true
+    extentXenCompat: false
+    extentDisablePhysicalBlocksize: true
+    extentBlocksize: 512
+    extentRpm: "SSD"
+    extentAvailThreshold: 0

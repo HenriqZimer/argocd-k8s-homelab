@@ -1,10 +1,8 @@
 # democratic-csi - driver freenas-api-iscsi (TrueNAS via API REST)
 # Backend: TrueNAS em 192.168.1.102, pool/dataset pai "slowbro/kubernetes"
 #
-# !!! TODO ANTES DO PRIMEIRO SYNC !!!
-# Preencher driver.config.httpConnection.apiKey com a API key do TrueNAS
-# (TrueNAS UI -> Credentials -> Local Users -> root -> API Keys, ou
-#  System Settings -> API Keys). Sem isso o controller nao sobe.
+# API key: gravar no Vault em k8s-homelab/truenas-api (chave api_key).
+# Sem isso o Secret da config nao e criado e o controller nao sobe.
 # Datasets "slowbro/kubernetes/vols" e "slowbro/kubernetes/snapshots"
 # precisam existir no TrueNAS (ou o parent com permissao de criar filhos).
 #
@@ -18,9 +16,12 @@ storageClasses:
   # Classe de bloco (RWO) para workloads sensiveis a latencia/IOPS:
   # Postgres, MySQL/MariaDB, Prometheus, Loki, Vault.
   # Nao e a default do cluster (essa e a NFS nfs-slowbro).
+  # reclaimPolicy Retain: apagar o PVC NAO apaga o zvol no TrueNAS (o PV fica
+  # Released e o dado continua em slowbro/kubernetes/vols). Limpeza e manual:
+  # apagar o PV no cluster e depois o zvol no TrueNAS.
   - name: freenas-iscsi
     defaultClass: false
-    reclaimPolicy: Delete
+    reclaimPolicy: Retain
     volumeBindingMode: Immediate
     allowVolumeExpansion: true
     parameters:
@@ -33,42 +34,25 @@ storageClasses:
       node-publish-secret:
       controller-expand-secret:
 
+# A config do driver (inclusive a API key) vem do Secret
+# democratic-csi-driver-config, gerado por charts/democratic-csi-extras a partir
+# do Vault (k8s-homelab/truenas-api, chave api_key). Nada de segredo no Git.
 driver:
+  existingConfigSecret: democratic-csi-driver-config
   config:
-    driver: freenas-api-iscsi
-    instance_id:
-    httpConnection:
-      protocol: http
-      host: 192.168.1.102
-      port: 80
-      # TODO: API key do TrueNAS (ver cabecalho do arquivo)
-      apiKey: ""
-      allowInsecure: true
-      apiVersion: 2
-    zfs:
-      # datasetParentName e detachedSnapshotsDatasetParentName sao irmaos
-      # sob slowbro/kubernetes (um nao pode ser filho do outro).
-      datasetParentName: slowbro/kubernetes/vols
-      detachedSnapshotsDatasetParentName: slowbro/kubernetes/snapshots
-      zvolCompression:
-      zvolDedup:
-      zvolEnableReservation: false
-      zvolBlocksize:
-    iscsi:
-      targetPortal: "192.168.1.102:3260"
-      targetPortals: []
-      namePrefix: csi-
-      nameSuffix: "-homelab"
-      # targetGroupPortalGroup / targetGroupInitiatorGroup: IDs dos grupos
-      # de portal e initiator ja criados no TrueNAS (Sharing -> iSCSI).
-      targetGroups:
-        - targetGroupPortalGroup: 1
-          targetGroupInitiatorGroup: 1
-          targetGroupAuthType: None
-          targetGroupAuthGroup:
-      extentInsecureTpc: true
-      extentXenCompat: false
-      extentDisablePhysicalBlocksize: true
-      extentBlocksize: 512
-      extentRpm: "SSD"
-      extentAvailThreshold: 0
+    driver: freenas-api-iscsi # o chart so le o nome do driver daqui
+
+# Talos: sem iscsiadm no host de forma tradicional. O node plugin entra no
+# namespace do host (nsenter) e usa o iscsiadm da extension siderolabs/iscsi-tools.
+# Requer a extension instalada nos workers (terraform-homelab, var
+# talos_system_extensions).
+node:
+  hostPID: true
+  driver:
+    extraEnv:
+      - name: ISCSIADM_HOST_STRATEGY
+        value: nsenter
+      - name: ISCSIADM_HOST_PATH
+        value: /usr/local/sbin/iscsiadm
+    iscsiDirHostPath: /usr/local/etc/iscsi
+    iscsiDirHostPathType: ""
