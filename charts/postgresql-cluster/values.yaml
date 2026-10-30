@@ -7,9 +7,9 @@ cluster:
   enablePodAntiAffinity: true
   podAntiAffinityType: required
   topologyKey: kubernetes.io/hostname
-  # Tag de minor fixa. Subir de major (17 -> 18) so com pg_dump/restore ou
+  # Tag de minor fixa. Subir de major muda o imageName e o CNPG roda pg_upgrade offline (fazer dump antes);
   # pg_upgrade planejado; subir de minor e so trocar a tag.
-  imageName: ghcr.io/cloudnative-pg/postgresql:17.11-standard-trixie
+  imageName: ghcr.io/cloudnative-pg/postgresql:18.6-standard-trixie
   imagePullPolicy: IfNotPresent
   storage:
     storageClass: freenas-iscsi
