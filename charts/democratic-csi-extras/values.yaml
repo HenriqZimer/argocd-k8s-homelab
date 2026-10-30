@@ -26,11 +26,13 @@ config:
     targetPortals: []
     namePrefix: csi-
     nameSuffix: "-homelab"
-    # targetGroupPortalGroup / targetGroupInitiatorGroup: IDs dos grupos
-    # de portal e initiator ja criados no TrueNAS (Sharing -> iSCSI).
+    # targetGroupPortalGroup: ID do portal ja criado no TrueNAS (Sharing -> iSCSI).
+    # targetGroupInitiatorGroup vazio = qualquer initiator (o grupo de initiators
+    # foi removido do TrueNAS; com ID 1 o provisionamento falha com
+    # "1 Initiator not found in database").
     targetGroups:
       - targetGroupPortalGroup: 1
-        targetGroupInitiatorGroup: 1
+        targetGroupInitiatorGroup:
         targetGroupAuthType: None
         targetGroupAuthGroup:
     extentInsecureTpc: true
