@@ -40,8 +40,8 @@ migrationJob:
     argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
     argocd.argoproj.io/sync-wave: "-1"
   resources:
-    requests: { cpu: 100m, memory: 256Mi }
-    limits: { memory: 1Gi }
+    requests: { cpu: 100m, memory: 512Mi }
+    limits: { memory: 2Gi } # com 1Gi o Prisma foi morto por OOM (exit 137)
 
 ingress:
   enabled: true
