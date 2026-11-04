@@ -1,0 +1,4 @@
+apiVersion: v2
+name: litellm-extras
+description: Secrets do LiteLLM (master key, chaves de provedores e Postgres) via Vault
+version: 1.0.0

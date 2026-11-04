@@ -1,0 +1,31 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: litellm
+  namespace: development
+  annotations:
+    argocd.argoproj.io/sync-wave: "6"
+spec:
+  project: homelab
+  sources:
+    - repoURL: docker.litellm.ai/berriai
+      chart: litellm-helm
+      targetRevision: "1.106.0"
+      helm:
+        valueFiles:
+          - $values/values/development/litellm.yaml
+    - repoURL: https://github.com/henriqzimer/argocd-k8s-homelab.git
+      targetRevision: main
+      ref: values
+    - repoURL: https://github.com/henriqzimer/argocd-k8s-homelab.git
+      targetRevision: main
+      path: charts/litellm-extras
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: litellm
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

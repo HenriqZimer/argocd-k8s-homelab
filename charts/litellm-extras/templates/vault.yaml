@@ -1,0 +1,64 @@
+apiVersion: secrets.hashicorp.com/v1beta1
+kind: VaultAuth
+metadata:
+  name: default
+  namespace: {{ .Values.namespace }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "-2"
+spec:
+  method: kubernetes
+  mount: kubernetes
+  kubernetes:
+    role: role-k8s-homelab
+    serviceAccount: default
+---
+# Master key e chaves de provedores: k8s-homelab/litellm
+# Chave obrigatoria: masterkey. Opcionais (viram variaveis de ambiente no pod,
+# referenciadas no proxy_config como os.environ/<NOME>): GEMINI_API_KEY,
+# OPENAI_API_KEY, ANTHROPIC_API_KEY...
+# Sem "transformation": todas as chaves do path sao copiadas para o Secret.
+apiVersion: secrets.hashicorp.com/v1beta1
+kind: VaultStaticSecret
+metadata:
+  name: litellm-secrets-sync
+  namespace: {{ .Values.namespace }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "-2"
+spec:
+  vaultAuthRef: default
+  type: kv-v2
+  mount: k8s-homelab
+  path: litellm
+  refreshAfter: 1m
+  destination:
+    name: litellm-secrets
+    create: true
+    overwrite: true
+    type: Opaque
+---
+# Banco do LiteLLM no cluster PostgreSQL compartilhado (CloudNativePG).
+# Senha em k8s-homelab/postgresql/litellm (chave "password").
+apiVersion: secrets.hashicorp.com/v1beta1
+kind: VaultStaticSecret
+metadata:
+  name: litellm-db-credentials-sync
+  namespace: {{ .Values.namespace }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "-2"
+spec:
+  vaultAuthRef: default
+  type: kv-v2
+  mount: k8s-homelab
+  path: postgresql/litellm
+  refreshAfter: 1m
+  destination:
+    name: litellm-db-credentials
+    create: true
+    overwrite: true
+    type: Opaque
+    transformation:
+      templates:
+        username:
+          text: litellm
+        password:
+          text: '{{ "{{" }} get .Secrets "password" {{ "}}" }}'

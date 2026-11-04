@@ -53,3 +53,5 @@ databases:
     extensions: []
   - name: defectdojo
     extensions: []
+  - name: litellm
+    extensions: []

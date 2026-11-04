@@ -36,6 +36,7 @@ spec:
     - https://kubernetes-sigs.github.io/headlamp/
     - ghcr.io/sergelogvinov/charts
     - 8gears.container-registry.com/library
+    - docker.litellm.ai/berriai
     - https://falcosecurity.github.io/charts
     - https://kyverno.github.io/kyverno/
     - https://aquasecurity.github.io/helm-charts/
