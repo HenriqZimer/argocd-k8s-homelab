@@ -10,7 +10,7 @@ spec:
   sources:
     - repoURL: docker.litellm.ai/berriai
       chart: litellm-helm
-      targetRevision: "1.106.0"
+      targetRevision: "1.108.0"
       helm:
         valueFiles:
           - $values/values/development/litellm.yaml
