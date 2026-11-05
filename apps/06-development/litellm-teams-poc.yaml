@@ -1,0 +1,22 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: litellm-teams-poc
+  namespace: development
+  annotations:
+    argocd.argoproj.io/sync-wave: "6"
+spec:
+  project: homelab
+  source:
+    repoURL: https://github.com/henriqzimer/argocd-k8s-homelab.git
+    targetRevision: main
+    path: pocs/litellm-teams-poc
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: litellm
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

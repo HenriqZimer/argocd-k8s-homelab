@@ -1,0 +1,15 @@
+{
+  "team_id": "cliente-b",
+  "team_alias": "cliente-b",
+  "models": ["qwen3-vl"],
+  "max_budget": 25,
+  "budget_duration": "30d",
+  "rpm_limit": 60,
+  "tpm_limit": 30000,
+  "max_parallel_requests": 3,
+  "request_guardrails": [],
+  "metadata": {
+    "customer": "cliente-b",
+    "managed_by": "argocd"
+  }
+}

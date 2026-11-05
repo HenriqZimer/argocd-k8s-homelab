@@ -13,7 +13,12 @@ spec:
       targetRevision: "1.108.0"
       helm:
         valueFiles:
-          - $values/values/development/litellm.yaml
+          - $values/values/development/litellm/00-infrastructure.yaml
+          - $values/values/development/litellm/10-models.yaml
+          - $values/values/development/litellm/20-guardrails.yaml
+          - $values/values/development/litellm/30-policies.yaml
+          - $values/values/development/litellm/40-mcp.yaml
+          - $values/values/development/litellm/50-runtime.yaml
     - repoURL: https://github.com/henriqzimer/argocd-k8s-homelab.git
       targetRevision: main
       ref: values

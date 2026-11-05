@@ -1,0 +1,123 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: litellm-teams-poc-sync
+  namespace: litellm
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: litellm-teams-poc-sync
+  namespace: litellm
+  annotations:
+    argocd.argoproj.io/hook: Sync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation,HookSucceeded
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  backoffLimit: 3
+  activeDeadlineSeconds: 300
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: litellm-teams-poc-sync
+    spec:
+      serviceAccountName: litellm-teams-poc-sync
+      restartPolicy: Never
+      containers:
+        - name: sync
+          image: python:3.12-alpine
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: LITELLM_BASE_URL
+              value: http://litellm.litellm.svc.cluster.local:4000
+            - name: LITELLM_MASTER_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: litellm-secrets
+                  key: masterkey
+          volumeMounts:
+            - name: team-spec
+              mountPath: /spec
+              readOnly: true
+          command: ["python", "-u", "-c"]
+          args:
+            - |
+              import json
+              import glob
+              import os
+              import time
+              import urllib.request
+
+              base = os.environ["LITELLM_BASE_URL"].rstrip("/")
+              token = os.environ["LITELLM_MASTER_KEY"]
+
+              def request(method, path, payload=None):
+                  body = None if payload is None else json.dumps(payload).encode()
+                  req = urllib.request.Request(
+                      base + path,
+                      data=body,
+                      method=method,
+                      headers={
+                          "Authorization": "Bearer " + token,
+                          "Content-Type": "application/json",
+                      },
+                  )
+                  with urllib.request.urlopen(req, timeout=20) as response:
+                      raw = response.read()
+                      return json.loads(raw) if raw else {}
+
+              # Wait for LiteLLM to be ready before reconciling.
+              for attempt in range(30):
+                  try:
+                      health_request = urllib.request.Request(base + "/health/readiness")
+                      with urllib.request.urlopen(health_request, timeout=10):
+                          pass
+                      break
+                  except Exception:
+                      if attempt == 29:
+                          raise
+                      time.sleep(5)
+
+              listed = request("GET", "/team/list")
+              if isinstance(listed, dict):
+                  teams = listed.get("teams", listed.get("data", []))
+              else:
+                  teams = listed
+              if not isinstance(teams, list):
+                  raise RuntimeError("Unexpected response from /team/list")
+
+              desired_teams = []
+              for spec_path in sorted(glob.glob("/spec/*.json")):
+                  with open(spec_path, encoding="utf-8") as spec_file:
+                      desired_teams.append(json.load(spec_file))
+              if not desired_teams:
+                  raise RuntimeError("No team specs found under /spec")
+
+              for desired in desired_teams:
+                  # request_guardrails e dado do perfil consumido pelo backend SaaS,
+                  # nao um campo do endpoint de criacao/atualizacao de Team.
+                  team_payload = {
+                      key: value
+                      for key, value in desired.items()
+                      if key != "request_guardrails"
+                  }
+                  team_id = desired["team_id"]
+                  alias = desired["team_alias"]
+                  by_id = [team for team in teams if team.get("team_id") == team_id]
+                  by_alias = [team for team in teams if team.get("team_alias") == alias]
+
+                  if by_alias and not by_id:
+                      raise RuntimeError(
+                          f"Team alias {alias!r} already exists with a different team_id; "
+                          "choose a unique alias or migrate it explicitly."
+                      )
+                  if by_id:
+                      request("POST", "/team/update", team_payload)
+                      print(f"Updated team {alias} ({team_id})")
+                  else:
+                      request("POST", "/team/new", team_payload)
+                      print(f"Created team {alias} ({team_id})")
+      volumes:
+        - name: team-spec
+          configMap:
+            name: litellm-teams-poc-spec

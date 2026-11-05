@@ -1,0 +1,8 @@
+# MCP servers publicados pelo gateway. Para permissões por time/key, configure
+# grants específicos quando esses tenants forem adicionados à POC.
+proxy_config:
+  mcp_servers:
+    deepwiki:
+      url: https://mcp.deepwiki.com/mcp
+      transport: http
+      description: "DeepWiki - consulta documentacao de repositorios GitHub publicos"

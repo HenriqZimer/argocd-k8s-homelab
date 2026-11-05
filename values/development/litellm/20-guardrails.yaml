@@ -1,0 +1,29 @@
+# Filtros definidos em código. `pii-filter` é aplicado pela policy global;
+# `poc-team-guardrail` é selecionado pelo backend por cliente no OSS.
+proxy_config:
+  guardrails:
+    - guardrail_name: pii-filter
+      litellm_params:
+        guardrail: litellm_content_filter
+        mode: pre_call
+        patterns:
+          - { pattern_type: prebuilt, pattern_name: email, action: MASK }
+          - { pattern_type: prebuilt, pattern_name: us_ssn, action: BLOCK }
+          - { pattern_type: prebuilt, pattern_name: aws_access_key, action: BLOCK }
+          - { pattern_type: prebuilt, pattern_name: github_token, action: BLOCK }
+          - { pattern_type: regex, name: cpf, pattern: '\b\d{3}\.\d{3}\.\d{3}-\d{2}\b', action: MASK }
+        blocked_words:
+          - { keyword: confidencial, action: BLOCK }
+    - guardrail_name: injection-filter
+      litellm_params:
+        guardrail: litellm_content_filter
+        mode: pre_call
+        categories:
+          - { category: prompt_injection_jailbreak, enabled: true, action: BLOCK, severity_threshold: medium }
+          - { category: prompt_injection_system_prompt, enabled: true, action: BLOCK, severity_threshold: medium }
+    - guardrail_name: poc-team-guardrail
+      litellm_params:
+        guardrail: litellm_content_filter
+        mode: pre_call
+        blocked_words:
+          - { keyword: poc-guardrail-secret, action: BLOCK }

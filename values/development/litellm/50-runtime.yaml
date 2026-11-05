@@ -1,0 +1,13 @@
+# Comportamento comum do proxy e credenciais injetadas pelo chart/Vault.
+proxy_config:
+  litellm_settings:
+    drop_params: true
+    num_retries: 2
+    request_timeout: 300
+    cache: true # cache local para a replica atual; use Redis ao escalar
+    cache_params: { type: local }
+    fallbacks:
+      - qwen3-vl-8b: [qwen3-vl-4b]
+  general_settings:
+    master_key: os.environ/PROXY_MASTER_KEY
+    store_model_in_db: true

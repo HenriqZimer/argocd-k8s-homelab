@@ -1,0 +1,57 @@
+# Helm chart, storage, ingress e scheduling do gateway LiteLLM.
+image:
+  pullPolicy: IfNotPresent
+
+masterkeySecretName: litellm-secrets
+masterkeySecretKey: masterkey
+environmentSecrets: [litellm-secrets]
+
+db:
+  useExisting: true
+  deployStandalone: false
+  endpoint: postgresql-rw.postgresql.svc.cluster.local
+  database: litellm
+  secret:
+    name: litellm-db-credentials
+    usernameKey: username
+    passwordKey: password
+
+migrationJob:
+  hooks:
+    argocd:
+      enabled: false
+  jobAnnotations:
+    argocd.argoproj.io/hook: Sync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
+    argocd.argoproj.io/sync-wave: "-1"
+  resources:
+    requests: { cpu: 100m, memory: 512Mi }
+    limits: { memory: 2Gi }
+
+ingress:
+  enabled: true
+  className: traefik
+  hosts:
+    - host: litellm.henriqzimer.com.br
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+
+resources:
+  requests: { cpu: 200m, memory: 512Mi }
+  limits: { memory: 2Gi }
+
+tolerations:
+  - key: nvidia.com/gpu
+    operator: Exists
+    effect: NoSchedule
+affinity:
+  nodeAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        preference:
+          matchExpressions:
+            - key: kubernetes.io/hostname
+              operator: In
+              values: [moltres]

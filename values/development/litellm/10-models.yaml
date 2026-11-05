@@ -1,0 +1,29 @@
+# Modelos e aliases disponíveis para os clientes do gateway.
+proxy_config:
+  model_list:
+    - model_name: qwen3-vl-8b
+      litellm_params:
+        model: ollama_chat/qwen3-vl:8b-instruct
+        api_base: http://ollama.development.svc.cluster.local:11434
+        input_cost_per_token: 0.000001 # preco ficticio para demonstrar budgets
+        output_cost_per_token: 0.000002
+    - model_name: qwen3-vl-4b
+      litellm_params:
+        model: ollama_chat/qwen3-vl:4b-instruct
+        api_base: http://ollama.development.svc.cluster.local:11434
+        input_cost_per_token: 0.000001
+        output_cost_per_token: 0.000002
+    - model_name: qwen3-vl
+      litellm_params:
+        model: ollama_chat/qwen3-vl:8b-instruct
+        api_base: http://ollama.development.svc.cluster.local:11434
+        input_cost_per_token: 0.000001
+        output_cost_per_token: 0.000002
+    - model_name: qwen3-vl
+      litellm_params:
+        model: ollama_chat/qwen3-vl:4b-instruct
+        api_base: http://ollama.development.svc.cluster.local:11434
+        input_cost_per_token: 0.000001
+        output_cost_per_token: 0.000002
+    # Adicione provedores cloud em arquivos separados em `providers/` quando
+    # a POC precisar de uma credencial de cliente/provedor.

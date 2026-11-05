@@ -1,0 +1,12 @@
+# Guardrail policies and their scopes. Team-scoped policy attachments require
+# LiteLLM Enterprise; the OSS POC uses a global baseline plus request-time guardrails.
+proxy_config:
+  policies:
+    base:
+      guardrails: { add: [pii-filter] }
+    estrita:
+      inherit: base
+      guardrails: { add: [injection-filter] }
+  policy_attachments:
+    - { policy: base, scope: "*" }
+    - { policy: estrita, models: ["gemini-*"] }
