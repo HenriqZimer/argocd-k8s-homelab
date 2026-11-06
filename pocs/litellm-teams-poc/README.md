@@ -62,6 +62,23 @@ Para Gemini, siga o exemplo em [`values/development/litellm/providers/README.md`
 
 `20-guardrails.yaml` define `pii-filter`, `injection-filter` e `poc-team-guardrail`. A policy global aplica PII a todos. O perfil de `cliente-a` também seleciona `poc-team-guardrail`, que bloqueia a frase `poc-guardrail-secret`; `cliente-b` não seleciona esse guardrail.
 
+### Testar CPF como serviço
+
+O guardrail `cpf-mask` é um exemplo isolado para chamar diretamente o endpoint de avaliação, sem invocar um modelo. Depois que a configuração for sincronizada pelo Argo, teste com um CPF fictício no formato esperado:
+
+```bash
+curl -i "$LITELLM_URL/guardrails/apply_guardrail" \
+  -H "Authorization: Bearer $LITELLM_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "guardrail_name": "cpf-mask",
+    "text": "CPF de teste: 123.456.789-00",
+    "input_type": "request"
+  }'
+```
+
+Na resposta, `response_text` deve conter o CPF mascarado. A expressão verifica apenas o formato `000.000.000-00`; ela não valida os dígitos verificadores do CPF.
+
 No fluxo SaaS, o backend autentica o usuário, resolve o `team_id` pelo tenant e monta a chamada ao LiteLLM. Para `cliente-a`, inclui a lista do perfil:
 
 ```json
