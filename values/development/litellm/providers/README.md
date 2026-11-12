@@ -52,3 +52,23 @@ Para um Llama servido pelo Ollama, adicione um item como este, substituindo a ta
 ```
 
 Modelos locais usam `ollama_chat/<nome:tag>` e não precisam de chave cloud. O mesmo padrão de alias e allowlist de team se aplica.
+
+## Usar Claude Pro pela assinatura
+
+O LiteLLM não guarda os dados da sua conta Claude. O login da assinatura é feito no Claude Code, no computador do usuário; o Claude Code renova e encaminha o token OAuth em cada chamada. O proxy autentica separadamente com uma virtual key do próprio LiteLLM. Não crie nem cadastre `ANTHROPIC_API_KEY` para este fluxo. A assinatura e seus limites permanecem sob controle da Anthropic. [Guia oficial do LiteLLM](https://docs.litellm.ai/docs/tutorials/claude_code_max_subscription)
+
+O catálogo declara `anthropic/*` em `10-models.yaml`, e a equipe pessoal `claude-pro-personal` permite esses modelos. Após a sincronização do Argo CD, crie uma virtual key no LiteLLM associada a essa equipe. Essa chave é somente para autenticação no gateway; ela não é uma chave de API Anthropic.
+
+No terminal em que o Claude Code será usado, configure o endereço do gateway e a virtual key:
+
+```bash
+export LITELLM_API_KEY="<virtual-key-do-litellm>"
+unset ANTHROPIC_API_KEY ANTHROPIC_AUTH_TOKEN ANTHROPIC_MODEL
+export ANTHROPIC_BASE_URL="https://litellm.henriqzimer.com.br"
+export ANTHROPIC_CUSTOM_HEADERS="x-litellm-api-key: Bearer $LITELLM_API_KEY"
+claude
+```
+
+Dentro do Claude Code, execute `/login` se ainda não estiver conectado, escolha a opção Claude Pro/Max e entre com a conta da assinatura. Se já houver uma sessão de API Console ativa, `/login` permite trocar para a assinatura. Depois escolha um modelo permitido pelo seu plano com `/model`. Não defina `ANTHROPIC_API_KEY` ou `ANTHROPIC_AUTH_TOKEN`: Claude Code envia seu token de assinatura no cabeçalho `Authorization`, e o cabeçalho `x-litellm-api-key` identifica a virtual key do LiteLLM.
+
+Este fluxo é para chamadas do Claude Code. Outros clientes que aceitam somente uma API key estática não conseguem usar automaticamente a sessão OAuth da assinatura.

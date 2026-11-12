@@ -1,0 +1,9 @@
+{
+  "team_id": "claude-pro-personal",
+  "team_alias": "claude-pro-personal",
+  "models": ["anthropic/*"],
+  "metadata": {
+    "managed_by": "argocd",
+    "purpose": "Claude Pro subscription through Claude Code"
+  }
+}
