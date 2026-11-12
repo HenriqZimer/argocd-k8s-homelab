@@ -101,8 +101,10 @@ spec:
                   url = desired.get("url")
                   marker = "${STUDIO_MCP_TOKEN}"
                   if url and marker in url:
-                      token = os.environ["STUDIO_MCP_TOKEN"].rstrip("\r\n")
-                      desired["url"] = url.replace(marker, urllib.parse.quote(token, safe=""))
+                      studio_token = os.environ["STUDIO_MCP_TOKEN"].rstrip("\r\n")
+                      desired["url"] = url.replace(
+                          marker, urllib.parse.quote(studio_token, safe="")
+                      )
                   if marker in json.dumps(desired):
                       raise RuntimeError("Unresolved secret placeholder in MCP server spec")
 
