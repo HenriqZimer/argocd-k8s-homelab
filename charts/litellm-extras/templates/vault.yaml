@@ -15,7 +15,7 @@ spec:
 # Master key e chaves de provedores: k8s-homelab/litellm
 # Chave obrigatoria: masterkey. Opcionais (viram variaveis de ambiente no pod,
 # referenciadas no proxy_config como os.environ/<NOME>): GEMINI_API_KEY,
-# OPENAI_API_KEY, ANTHROPIC_API_KEY...
+# OPENAI_API_KEY, ANTHROPIC_API_KEY, STUDIO_MCP_TOKEN...
 # Sem "transformation": todas as chaves do path sao copiadas para o Secret.
 apiVersion: secrets.hashicorp.com/v1beta1
 kind: VaultStaticSecret

@@ -1,0 +1,9 @@
+{
+  "server_id": "b3dc0a5e-c23a-49d5-b51d-ddf732389a67",
+  "server_name": "Studio",
+  "alias": "Studio",
+  "description": "MCP do Studio, reconciliado pelo Argo CD",
+  "url": "https://sxpkceszkclilueimaun.supabase.co/functions/v1/studio-mcp?token=${STUDIO_MCP_TOKEN}",
+  "transport": "http",
+  "auth_type": "none"
+}

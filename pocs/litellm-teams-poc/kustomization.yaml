@@ -3,10 +3,17 @@ kind: Kustomization
 namespace: litellm
 resources:
   - sync/teams-job.yaml
+  - sync/mcp-servers-job.yaml
 configMapGenerator:
   - name: litellm-teams-poc-spec
     files:
       - teams/cliente-a.json
       - teams/cliente-b.json
+    options:
+      disableNameSuffixHash: true
+  - name: litellm-mcp-poc-spec
+    files:
+      - mcp/servers/deepwiki-poc.json
+      - mcp/servers/studio.json
     options:
       disableNameSuffixHash: true

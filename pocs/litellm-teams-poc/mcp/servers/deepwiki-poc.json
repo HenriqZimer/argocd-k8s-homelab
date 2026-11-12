@@ -1,0 +1,10 @@
+{
+  "server_id": "mcp-poc-deepwiki",
+  "server_name": "deepwiki_poc",
+  "alias": "deepwiki_poc",
+  "description": "MCP de teste para validar o cadastro declarativo e o roteamento pelo LiteLLM",
+  "url": "https://mcp.deepwiki.com/mcp",
+  "transport": "http",
+  "auth_type": "none",
+  "allow_all_keys": false
+}

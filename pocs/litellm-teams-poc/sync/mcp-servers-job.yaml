@@ -1,0 +1,137 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: litellm-mcp-poc-sync
+  namespace: litellm
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: litellm-mcp-poc-sync
+  namespace: litellm
+  annotations:
+    argocd.argoproj.io/hook: Sync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation,HookSucceeded
+    argocd.argoproj.io/sync-wave: "2"
+spec:
+  backoffLimit: 3
+  activeDeadlineSeconds: 300
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: litellm-mcp-poc-sync
+    spec:
+      serviceAccountName: litellm-mcp-poc-sync
+      restartPolicy: Never
+      containers:
+        - name: sync
+          image: python:3.12-alpine
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: LITELLM_BASE_URL
+              value: http://litellm.litellm.svc.cluster.local:4000
+            - name: LITELLM_MASTER_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: litellm-secrets
+                  key: masterkey
+            - name: STUDIO_MCP_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: litellm-secrets
+                  key: STUDIO_MCP_TOKEN
+          volumeMounts:
+            - name: mcp-spec
+              mountPath: /spec
+              readOnly: true
+          command: ["python", "-u", "-c"]
+          args:
+            - |
+              import glob
+              import json
+              import os
+              import time
+              import urllib.error
+              import urllib.parse
+              import urllib.request
+
+              base = os.environ["LITELLM_BASE_URL"].rstrip("/")
+              token = os.environ["LITELLM_MASTER_KEY"]
+
+              def request(method, path, payload=None):
+                  body = None if payload is None else json.dumps(payload).encode()
+                  req = urllib.request.Request(
+                      base + path,
+                      data=body,
+                      method=method,
+                      headers={
+                          "Authorization": "Bearer " + token,
+                          "Content-Type": "application/json",
+                      },
+                  )
+                  with urllib.request.urlopen(req, timeout=20) as response:
+                      raw = response.read()
+                      return json.loads(raw) if raw else {}
+
+              for attempt in range(30):
+                  try:
+                      with urllib.request.urlopen(base + "/health/readiness", timeout=10):
+                          break
+                  except Exception:
+                      if attempt == 29:
+                          raise
+                      time.sleep(5)
+
+              listed = request("GET", "/v1/mcp/server")
+              if isinstance(listed, dict):
+                  servers = listed.get("data", listed.get("servers", []))
+              else:
+                  servers = listed
+              if not isinstance(servers, list):
+                  raise RuntimeError("Unexpected response from /v1/mcp/server")
+
+              desired_servers = []
+              for spec_path in sorted(glob.glob("/spec/*.json")):
+                  with open(spec_path, encoding="utf-8") as spec_file:
+                      desired_servers.append(json.load(spec_file))
+              if not desired_servers:
+                  raise RuntimeError("No MCP server specs found under /spec")
+
+              for desired in desired_servers:
+                  url = desired.get("url")
+                  marker = "${STUDIO_MCP_TOKEN}"
+                  if url and marker in url:
+                      token = os.environ["STUDIO_MCP_TOKEN"].rstrip("\r\n")
+                      desired["url"] = url.replace(marker, urllib.parse.quote(token, safe=""))
+                  if marker in json.dumps(desired):
+                      raise RuntimeError("Unresolved secret placeholder in MCP server spec")
+
+                  server_id = desired["server_id"]
+                  existing = next(
+                      (server for server in servers if server.get("server_id") == server_id),
+                      None,
+                  )
+                  same_name = next(
+                      (
+                          server for server in servers
+                          if server.get("server_name") == desired["server_name"]
+                          and server.get("server_id") != server_id
+                      ),
+                      None,
+                  )
+                  if same_name:
+                      raise RuntimeError(
+                          f"MCP server name {desired['server_name']!r} already exists "
+                          "with a different server_id; migrate it explicitly."
+                      )
+                  method = "PUT" if existing else "POST"
+                  result = request(method, "/v1/mcp/server", desired)
+                  action = "Updated" if existing else "Created"
+                  print(f"{action} MCP server {desired['server_name']} ({server_id})")
+                  if isinstance(result, dict):
+                      servers = [s for s in servers if s.get("server_id") != server_id]
+                      servers.append(result)
+      volumes:
+        - name: mcp-spec
+          configMap:
+            name: litellm-mcp-poc-spec

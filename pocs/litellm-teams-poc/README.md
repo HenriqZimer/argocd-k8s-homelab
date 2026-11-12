@@ -99,9 +99,9 @@ Se o cliente precisa chamar o LiteLLM diretamente e o guardrail precisa ser obri
 
 Nem todo objeto do LiteLLM é um valor estático de Helm. Teams, virtual keys, servidores MCP registrados no banco, agentes e skills têm operações de API/UI e dados de runtime. Os diretórios correspondentes documentam a fronteira e o próximo passo, para não simular uma declaratividade que a configuração Helm não oferece.
 
-- [MCP](mcp/README.md): configuração estática e permissões do gateway.
+- [MCP](mcp/README.md): manifesto e reconciliação via API, além da configuração estática e permissões do gateway.
 - [Agentes](agents/README.md): registro A2A e endpoint executável.
 - [Skills](skills/README.md): catálogo e permissões de skills.
 - [Keys](keys/README.md): emissão segura de credenciais e budgets por key.
 
-O Job usa a master key do Secret `litellm-secrets`, já sincronizada pelo Vault. O gateway requer PostgreSQL para budgets e spend serem aplicados.
+Os Jobs usam a master key do Secret `litellm-secrets`, já sincronizada pelo Vault. O reconciliador MCP registra `deepwiki_poc` pela API a partir de JSON no Git; o manifesto não cria um pod para o MCP upstream. O gateway requer PostgreSQL para budgets e spend serem aplicados.
