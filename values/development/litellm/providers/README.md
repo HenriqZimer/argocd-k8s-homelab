@@ -57,7 +57,7 @@ Modelos locais usam `ollama_chat/<nome:tag>` e não precisam de chave cloud. O m
 
 O LiteLLM não guarda os dados da sua conta Claude. O login da assinatura é feito no Claude Code, no computador do usuário; o Claude Code renova e encaminha o token OAuth em cada chamada. O proxy autentica separadamente com uma virtual key do próprio LiteLLM. Não crie nem cadastre `ANTHROPIC_API_KEY` para este fluxo. A assinatura e seus limites permanecem sob controle da Anthropic. [Guia oficial do LiteLLM](https://docs.litellm.ai/docs/tutorials/claude_code_max_subscription)
 
-O catálogo declara `anthropic/*` em `10-models.yaml`, e a equipe pessoal `claude-pro-personal` permite esses modelos. Após a sincronização do Argo CD, crie uma virtual key no LiteLLM associada a essa equipe. Essa chave é somente para autenticação no gateway; ela não é uma chave de API Anthropic.
+O catálogo declara `anthropic/*` em `10-models.yaml`. Para teste individual, a equipe `claude-pro-personal` permite esses modelos. Para acesso compartilhado com controle de membros, use a equipe `claude-subscription-users`, gerenciada em `pocs/litellm-teams-poc/teams/claude-subscription-users.json`. Ela concede acesso ao modelo somente aos usuários que forem adicionados à equipe no LiteLLM. Emita uma virtual key individual por usuário, vinculada à equipe; a chave autentica no gateway, não na Anthropic.
 
 No terminal em que o Claude Code será usado, configure o endereço do gateway e a virtual key:
 

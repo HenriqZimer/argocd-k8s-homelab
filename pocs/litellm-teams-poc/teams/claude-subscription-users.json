@@ -1,0 +1,9 @@
+{
+  "team_id": "claude-subscription-users",
+  "team_alias": "claude-subscription-users",
+  "models": ["anthropic/*"],
+  "metadata": {
+    "managed_by": "argocd",
+    "purpose": "Approved users forwarding their own Claude subscription through Claude Code"
+  }
+}

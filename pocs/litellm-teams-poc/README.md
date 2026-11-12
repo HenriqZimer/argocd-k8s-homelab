@@ -30,8 +30,13 @@ Os arquivos Helm são unidos pelo Argo CD na ordem listada em `apps/06-developme
 |---|---:|---|
 | `cliente-a` | US$ 10 / 30 dias | 30 RPM, 10.000 TPM, 2 chamadas simultâneas; guardrail adicional |
 | `cliente-b` | US$ 25 / 30 dias | 60 RPM, 30.000 TPM, 3 chamadas simultâneas; baseline global |
+| `claude-subscription-users` | sem budget LiteLLM | Modelos `anthropic/*`; acesso concedido aos membros aprovados |
 
-Cada team usa somente `qwen3-vl`. Os valores de preço desse modelo são fictícios para demonstrar budgets. Cada JSON descreve também `request_guardrails`, uma lista que o backend SaaS deve passar nas chamadas daquele cliente. O Job remove esse campo antes de chamar a API de Teams do LiteLLM.
+Os teams `cliente-a` e `cliente-b` usam somente `qwen3-vl`; os valores de preço desse modelo são fictícios para demonstrar budgets. Cada JSON de cliente descreve também `request_guardrails`, uma lista que o backend SaaS deve passar nas chamadas daquele cliente. O Job remove esse campo antes de chamar a API de Teams do LiteLLM.
+
+O team `claude-subscription-users` é o grupo compartilhado para pessoas autorizadas a usar o Claude Code com suas próprias assinaturas Claude. O modelo fica configurado no gateway; a lista `models` do team concede acesso ao grupo. No Admin UI, crie os usuários LiteLLM, adicione somente os aprovados ao team e emita uma virtual key individual vinculada ao `user_id` e ao `team_id`. Ao remover o acesso, bloqueie/remova a chave individual e remova o usuário do team.
+
+Cada pessoa ainda precisa autenticar sua própria assinatura no Claude Code com `/login`. A virtual key individual é a credencial de entrada do gateway LiteLLM; o OAuth do Claude Code é encaminhado separadamente para a Anthropic e usa a assinatura daquela pessoa. Não distribua uma mesma virtual key para todos: chaves individuais permitem revogação e atribuição por usuário. O modelo não fica liberado a todos os demais teams.
 
 Para adicionar um team, crie um JSON separado em `teams/` e inclua seu caminho em `configMapGenerator.files` no `kustomization.yaml`. O hook do Argo lê todos os JSONs montados e chama `/team/new` ou `/team/update`. Os nomes são IDs estáveis e os aliases devem ser exclusivos desta POC. Remover um arquivo do Git não apaga o team nem o histórico de spend no banco.
 

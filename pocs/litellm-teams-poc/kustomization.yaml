@@ -10,6 +10,7 @@ configMapGenerator:
       - teams/cliente-a.json
       - teams/cliente-b.json
       - teams/claude-pro.json
+      - teams/claude-subscription-users.json
     options:
       disableNameSuffixHash: true
   - name: litellm-mcp-poc-spec
